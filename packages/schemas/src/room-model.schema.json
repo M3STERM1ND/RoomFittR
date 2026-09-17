@@ -1,0 +1,184 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://roomfittr.app/schemas/room-model.schema.json",
+  "title": "RoomModel",
+  "description": "The structural output of the video-to-3D pipeline: floor polygon, walls, openings, fixed obstacles and scale. Source of truth for the layout engine and the viewer. Units are integer millimetres, Y-up, floor plane at y=0, origin at the floor-polygon centroid, +X aligned with the longest wall after Manhattan alignment (see implementation-plan.md 2.4).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "pipeline_version",
+    "units",
+    "up",
+    "floor_polygon",
+    "ceiling_height_mm",
+    "ceiling_observed",
+    "walls",
+    "openings",
+    "fixed_obstacles",
+    "scale",
+    "quality"
+  ],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/definitions/schema_version" },
+    "pipeline_version": { "$ref": "common.schema.json#/definitions/semver" },
+    "units": { "const": "mm" },
+    "up": { "const": "+Y" },
+
+    "floor_polygon": {
+      "description": "Counter-clockwise [x, z] vertices in mm. Closed implicitly: the last vertex joins the first. Must be simple (non-self-intersecting); area is sanity-checked to 3-150 m2 (3.6).",
+      "type": "array",
+      "minItems": 3,
+      "items": { "$ref": "common.schema.json#/definitions/point2_mm" }
+    },
+
+    "ceiling_height_mm": {
+      "description": "Floor to ceiling. Sanity range from 3.6.",
+      "type": "integer",
+      "minimum": 2000,
+      "maximum": 4500
+    },
+    "ceiling_observed": {
+      "description": "False when the ceiling was never properly seen and the height came from wall-top evidence or the 2400mm prior. Confidence in `scale` should reflect that.",
+      "type": "boolean"
+    },
+
+    "walls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "start", "end", "thickness_mm", "kind", "length_mm"],
+        "properties": {
+          "id": { "$ref": "common.schema.json#/definitions/wall_id" },
+          "start": { "$ref": "common.schema.json#/definitions/point2_mm" },
+          "end": { "$ref": "common.schema.json#/definitions/point2_mm" },
+          "thickness_mm": { "type": "integer", "minimum": 0, "maximum": 1000 },
+          "kind": {
+            "description": "An `open` segment is a boundary with no wall behind it (open-plan edge, wide doorway). The solver treats it as a boundary but never places against it (3.6).",
+            "enum": ["solid", "open"]
+          },
+          "length_mm": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+
+    "openings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "wall_id",
+          "type",
+          "offset_mm",
+          "width_mm",
+          "sill_mm",
+          "height_mm",
+          "swing",
+          "confidence"
+        ],
+        "properties": {
+          "id": { "$ref": "common.schema.json#/definitions/opening_id" },
+          "wall_id": { "$ref": "common.schema.json#/definitions/wall_id" },
+          "type": { "enum": ["door", "window", "passage"] },
+          "offset_mm": {
+            "description": "Along the wall from its start vertex.",
+            "type": "integer",
+            "minimum": 0
+          },
+          "width_mm": { "type": "integer", "minimum": 1 },
+          "sill_mm": {
+            "description": "Height of the bottom edge above the floor. Doors are ~0.",
+            "type": "integer",
+            "minimum": 0
+          },
+          "height_mm": { "type": "integer", "minimum": 1 },
+          "swing": {
+            "description": "V1 usually cannot infer this. When unknown the validator keeps out both sides (5.5 H4).",
+            "enum": ["left", "right", "unknown"]
+          },
+          "confidence": { "$ref": "common.schema.json#/definitions/unit_interval" }
+        }
+      }
+    },
+
+    "fixed_obstacles": {
+      "description": "Things that are not going anywhere: radiators, fireplaces, built-ins, columns, plus anything the user chose to keep.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label", "center", "size", "yaw_deg", "source"],
+        "properties": {
+          "id": { "$ref": "common.schema.json#/definitions/obstacle_id" },
+          "label": { "type": "string", "minLength": 1 },
+          "center": { "$ref": "common.schema.json#/definitions/point2_mm" },
+          "size": {
+            "description": "[width, depth, height] in mm, in the obstacle's own frame before yaw.",
+            "$ref": "common.schema.json#/definitions/size3_mm"
+          },
+          "yaw_deg": { "$ref": "common.schema.json#/definitions/yaw_deg" },
+          "source": { "enum": ["detected", "user_kept"] }
+        }
+      }
+    },
+
+    "appearance": {
+      "description": "Per-surface colour and material for the viewer. Tier 0 is flat colour, tier 1 adds textures (3.7).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier"],
+      "properties": {
+        "walls": {
+          "type": "object",
+          "additionalProperties": { "$ref": "common.schema.json#/definitions/surface_appearance" }
+        },
+        "floor": { "$ref": "common.schema.json#/definitions/surface_appearance" },
+        "ceiling": { "$ref": "common.schema.json#/definitions/surface_appearance" },
+        "tier": { "enum": [0, 1] }
+      }
+    },
+
+    "scale": {
+      "description": "How the metric scale was arrived at, and how much to trust it. Never present a guess as a fact (3.11).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["factor", "sources", "confidence", "user_calibrated"],
+      "properties": {
+        "factor": { "type": "number", "exclusiveMinimum": 0 },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "factor"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "factor": { "type": "number", "exclusiveMinimum": 0 },
+              "weight": { "$ref": "common.schema.json#/definitions/unit_interval" }
+            }
+          }
+        },
+        "confidence": { "enum": ["high", "medium", "low"] },
+        "user_calibrated": { "type": "boolean" }
+      }
+    },
+
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["coverage_pct", "frames_used", "warnings"],
+      "properties": {
+        "coverage_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "frames_used": { "type": "integer", "minimum": 0 },
+        "warnings": {
+          "description": "Machine-readable warning codes from the known-limitations list (3.11), shown to the user rather than swallowed.",
+          "type": "array",
+          "items": { "$ref": "common.schema.json#/definitions/warning_code" }
+        }
+      }
+    }
+  }
+}

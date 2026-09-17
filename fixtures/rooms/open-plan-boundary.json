@@ -1,0 +1,128 @@
+{
+  "schema_version": 0,
+  "pipeline_version": "0.0.0",
+  "units": "mm",
+  "up": "+Y",
+  "floor_polygon": [
+    [
+      -2100,
+      -2000
+    ],
+    [
+      2100,
+      -2000
+    ],
+    [
+      2100,
+      2000
+    ],
+    [
+      -2100,
+      2000
+    ]
+  ],
+  "ceiling_height_mm": 2800,
+  "ceiling_observed": true,
+  "walls": [
+    {
+      "id": "W1",
+      "start": [
+        -2100,
+        -2000
+      ],
+      "end": [
+        2100,
+        -2000
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 4200
+    },
+    {
+      "id": "W2",
+      "start": [
+        2100,
+        -2000
+      ],
+      "end": [
+        2100,
+        2000
+      ],
+      "thickness_mm": 100,
+      "kind": "open",
+      "length_mm": 4000
+    },
+    {
+      "id": "W3",
+      "start": [
+        2100,
+        2000
+      ],
+      "end": [
+        -2100,
+        2000
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 4200
+    },
+    {
+      "id": "W4",
+      "start": [
+        -2100,
+        2000
+      ],
+      "end": [
+        -2100,
+        -2000
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 4000
+    }
+  ],
+  "openings": [
+    {
+      "id": "O1",
+      "wall_id": "W1",
+      "type": "window",
+      "offset_mm": 1400,
+      "width_mm": 2000,
+      "sill_mm": 900,
+      "height_mm": 1200,
+      "swing": "unknown",
+      "confidence": 0.85
+    }
+  ],
+  "fixed_obstacles": [],
+  "appearance": {
+    "floor": {
+      "color": "#efecea",
+      "material": "oak"
+    },
+    "ceiling": {
+      "color": "#f6f9fc",
+      "material": "paint"
+    },
+    "tier": 0
+  },
+  "scale": {
+    "factor": 1.0,
+    "sources": [
+      {
+        "name": "fixture",
+        "factor": 1.0,
+        "weight": 1.0
+      }
+    ],
+    "confidence": "high",
+    "user_calibrated": true
+  },
+  "quality": {
+    "coverage_pct": 96.0,
+    "frames_used": 112,
+    "warnings": [
+      "OPEN_BOUNDARY_PRESENT"
+    ]
+  }
+}

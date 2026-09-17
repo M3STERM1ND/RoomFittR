@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://roomfittr.app/schemas/layout-plan.schema.json",
+  "title": "LayoutPlan",
+  "description": "The AI's plan for a room, before any product is chosen or anything is placed (5.4 L2). This is the tool-schema Claude fills in. It is intent only: categories, priorities, budget shares and relations. Geometry is the solver's job, so nothing here carries a coordinate.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "room_type", "slots"],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/definitions/schema_version" },
+
+    "room_type": {
+      "type": "string",
+      "minLength": 1,
+      "description": "User-selected or inferred. Drives the default budget ratios and the category vocabulary."
+    },
+    "style": { "type": "string", "minLength": 1 },
+
+    "slots": {
+      "description": "One furniture opportunity each. Capped at 10 in V1 (5.4 post-checks).",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["slot_id", "category", "priority", "budget_share"],
+        "properties": {
+          "slot_id": { "$ref": "common.schema.json#/definitions/slot_id" },
+          "category": {
+            "description": "Must exist in the category vocabulary; checked deterministically after the call, never trusted.",
+            "type": "string",
+            "minLength": 1
+          },
+          "priority": {
+            "description": "Drop order when the room or the budget runs out: nice first, must last.",
+            "enum": ["must", "should", "nice"]
+          },
+          "budget_share": {
+            "description": "Fraction of budget. Renormalised to 100% with a 5% reserve after the call, so the model's arithmetic is never load-bearing.",
+            "$ref": "common.schema.json#/definitions/unit_interval"
+          },
+
+          "intent": {
+            "description": "What the slot wants, in terms the solver's candidate generators understand. Every id referenced is checked against the RoomModel before use.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "anchor": {
+                "description": "What this slot is positioned relative to: a wall, an opening, or another slot.",
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["kind", "ref"],
+                "properties": {
+                  "kind": { "enum": ["wall", "opening", "slot", "region"] },
+                  "ref": { "type": "string", "minLength": 1 }
+                }
+              },
+              "relation": {
+                "description": "Closed list: these map one-to-one onto the solver's candidate-pose generators (5.4 L5.2). A relation the solver cannot generate poses for is worse than no relation at all.",
+                "enum": [
+                  "against_wall",
+                  "in_front_of",
+                  "under",
+                  "around",
+                  "beside",
+                  "float"
+                ]
+              },
+              "facing": {
+                "description": "What the item's front should point at.",
+                "type": "string",
+                "minLength": 1
+              },
+              "notes": {
+                "description": "Free text for the solver's scoring hints and for explaining the plan. Never parsed as geometry.",
+                "type": "string",
+                "maxLength": 500
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "rationale": {
+      "description": "Short, shown to the user. Why this set of furniture for this room.",
+      "type": "string",
+      "maxLength": 1000
+    }
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://roomfittr.app/schemas/validation-report.schema.json",
+  "title": "ValidationReport",
+  "description": "What the deterministic validator says about a layout (5.5). This is what the UI shows, so every violation carries a measured value and a human sentence: never an opaque AI opinion. Produced identically by workers/layout/validator.py and packages/geometry/validator.ts; fixtures/validation/*.json pins the two together in CI.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "fits", "violations", "items"],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/definitions/schema_version" },
+
+    "fits": {
+      "description": "The headline. True when there is no hard violation. Soft violations are warnings and do not clear this flag.",
+      "type": "boolean"
+    },
+
+    "violations": {
+      "description": "Global violations, i.e. ones that are not about a single item: circulation (H6), total price (H7), main walkway (S1).",
+      "type": "array",
+      "items": { "$ref": "#/definitions/violation" }
+    },
+
+    "items": {
+      "description": "Per-item findings, keyed by layout item id.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["item_id", "violations"],
+        "properties": {
+          "item_id": { "$ref": "common.schema.json#/definitions/item_id" },
+          "violations": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/violation" }
+          }
+        }
+      }
+    },
+
+    "measured": {
+      "description": "Numbers the UI can show even when nothing is wrong: narrowest walkway, total price, free floor fraction.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "min_walkway_mm": { "type": "integer", "minimum": 0 },
+        "free_floor_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "total_price": { "$ref": "common.schema.json#/definitions/money_cents" }
+      }
+    }
+  },
+
+  "definitions": {
+    "violation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "severity", "message"],
+      "properties": {
+        "code": {
+          "description": "The rule ids from the 5.5 tables. Closed list so violations can be counted and tested rather than grepped.",
+          "enum": [
+            "H1_OUTSIDE_FLOOR",
+            "H2_ITEM_OVERLAP",
+            "H3_OBSTACLE_OVERLAP",
+            "H4_DOOR_KEEPOUT",
+            "H5_TOO_TALL",
+            "H6_CIRCULATION_BLOCKED",
+            "H7_OVER_BUDGET",
+            "S1_WALKWAY_TIGHT",
+            "S2_CATEGORY_CLEARANCE",
+            "S3_WINDOW_BLOCKED",
+            "S4_BACK_NOT_TO_WALL",
+            "S5_OVERSIZED_FOR_ROOM",
+            "S6_PRICE_STALE_OR_UNAVAILABLE"
+          ]
+        },
+        "severity": {
+          "description": "Hard blocks an AI layout and shows red in manual editing. Soft is a warning the user may ignore.",
+          "enum": ["hard", "soft"]
+        },
+        "message": {
+          "description": "The sentence shown to the user, with the measurement in it. For example: walkway narrows to 710 mm between the sofa and the bookshelf.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "measured_mm": {
+          "description": "The value that triggered the rule, where the rule is about a distance.",
+          "type": "integer"
+        },
+        "limit_mm": {
+          "description": "The threshold it failed against, so the UI can say by how much.",
+          "type": "integer"
+        },
+        "related_ids": {
+          "description": "Other items, walls, openings or obstacles involved. An overlap is never about one item alone.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

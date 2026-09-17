@@ -1,0 +1,47 @@
+# EXAMPLE, not real data. Copy this to gt-001.yaml and replace every number
+# with something you measured. It exists so the harness has something to run
+# against before the real dataset is captured, and so the shape of a real file
+# is obvious without reading the schema.
+#
+# Delete this file once gt-001 onwards exist.
+room_id: gt-000
+name: "Example room (synthetic)"
+room_type: living
+traits: [sparse]
+measured_on: "2026-09-17"
+measured_by: "example"
+instrument: "example, not a real measurement"
+
+ceiling_height_mm: 2700
+
+# Optional but wanted: without it, E4 (polygon IoU) cannot be scored.
+# CCW [x, z], centroid at the origin, same conventions as RoomModel.
+floor_polygon_mm:
+  - [-2300, -1900]
+  - [2300, -1900]
+  - [2300, 1900]
+  - [-2300, 1900]
+
+walls:
+  - { id: W1, length_mm: 4600 }
+  - { id: W2, length_mm: 3800 }
+  - { id: W3, length_mm: 4600 }
+  - { id: W4, length_mm: 3800 }
+
+openings:
+  - { id: O1, type: door,   wall_id: W3, offset_mm: 1200, width_mm: 830,  sill_mm: 0,   height_mm: 2040 }
+  - { id: O2, type: window, wall_id: W1, offset_mm: 1600, width_mm: 1800, sill_mm: 900, height_mm: 1200 }
+
+furniture:
+  - { label: sofa,         footprint_mm: [2100, 900], height_mm: 850 }
+  - { label: coffee table, footprint_mm: [1100, 600], height_mm: 420 }
+  - { label: bookshelf,    footprint_mm: [800, 300],  height_mm: 1800 }
+
+captures:
+  - { capture_id: gt-000-a, device: "iPhone 13",      os: "iOS 18",      style: careful, orientation: landscape, duration_s: 62, file: "captures/gt-000-a.mp4" }
+  - { capture_id: gt-000-b, device: "Pixel 6a",       os: "Android 15",  style: careful, orientation: landscape, duration_s: 58, file: "captures/gt-000-b.mp4" }
+  - { capture_id: gt-000-c, device: "iPhone 13",      os: "iOS 18",      style: sloppy,  orientation: portrait,  duration_s: 31, file: "captures/gt-000-c.mp4" }
+
+notes: >
+  Synthetic example so the harness can run end to end before real capture
+  starts. Numbers match fixtures/rooms/rectangular-living.json.

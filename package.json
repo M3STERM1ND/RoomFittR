@@ -1,0 +1,23 @@
+{
+  "name": "roomfittr",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.15.0",
+  "scripts": {
+    "dev": "pnpm --filter @roomfittr/web dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "schemas:gen": "pnpm --filter @roomfittr/schemas gen",
+    "schemas:check": "pnpm --filter @roomfittr/schemas check",
+    "py:lint": "uv run ruff check .",
+    "py:format:check": "uv run ruff format --check .",
+    "py:typecheck": "uv run mypy workers eval",
+    "py:test": "uv run pytest"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2"
+  }
+}

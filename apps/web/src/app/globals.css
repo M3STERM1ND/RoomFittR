@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   RoomFittr design system v1
+   Spec: /design-system.md. Two hues, no third. Change tokens here, not inline.
+   ========================================================================== */
+
+@theme {
+  /* --- Mist: dominant, pastel blue ------------------------------------- */
+  --color-mist-50: #f6f9fc;
+  --color-mist-100: #eaf1f8;
+  --color-mist-200: #d8e6f2;
+  --color-mist-300: #bfd6ea;
+  --color-mist-400: #9bc0de;
+  --color-mist-600: #3e6b90;
+  --color-mist-800: #2c4c66;
+
+  /* --- Hurricane: accent and ink ---------------------------------------- */
+  --color-hur-100: #efecea;
+  --color-hur-200: #ddd8d4;
+  --color-hur-300: #c4bcb7;
+  --color-hur-500: #8b7e77;
+  --color-hur-600: #71655f;
+  --color-hur-700: #5c524d;
+  --color-hur-900: #2e2926;
+
+  /* --- Type -------------------------------------------------------------- */
+  --font-display: var(--font-jost), "Century Gothic", system-ui, sans-serif;
+  --font-body: var(--font-nunito), "Segoe UI", system-ui, sans-serif;
+
+  --text-display-xl: clamp(2.5rem, 5.2vw, 4.75rem);
+  --text-display-xl--line-height: 1.05;
+  --text-display-xl--letter-spacing: -0.025em;
+
+  --text-display-l: clamp(2rem, 3.6vw, 3.25rem);
+  --text-display-l--line-height: 1.12;
+  --text-display-l--letter-spacing: -0.02em;
+
+  --text-display-m: clamp(1.5rem, 2.1vw, 1.875rem);
+  --text-display-m--line-height: 1.2;
+  --text-display-m--letter-spacing: -0.01em;
+
+  --text-body-l: clamp(1.0625rem, 0.6vw, 1.125rem);
+  --text-body-l--line-height: 1.6;
+
+  --text-body-m: clamp(1rem, 0.5vw, 1.0625rem);
+  --text-body-m--line-height: 1.6;
+
+  --text-body-s: 0.9375rem;
+  --text-body-s--line-height: 1.55;
+
+  --text-label: 0.875rem;
+  --text-label--line-height: 1.4;
+  --text-label--letter-spacing: 0.03em;
+
+  /* --- Form: two radii, two shadows -------------------------------------- */
+  --radius-ctl: 8px;
+  --radius-panel: 20px;
+
+  --shadow-soft: 0 1px 2px rgba(44, 76, 102, 0.04), 0 2px 8px rgba(44, 76, 102, 0.04);
+  --shadow-lift: 0 2px 4px rgba(44, 76, 102, 0.03), 0 12px 32px rgba(44, 76, 102, 0.07);
+
+  /* --- Motion: one curve, three durations -------------------------------- */
+  --ease-calm: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-mist-50);
+    color: var(--color-hur-700);
+    font-family: var(--font-body);
+    font-size: var(--text-body-m);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Headings balance across lines; body copy just avoids stranding a single
+     short word on the last line. */
+  p {
+    text-wrap: pretty;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    color: var(--color-hur-900);
+    text-wrap: balance;
+  }
+
+  /* One focus treatment everywhere. */
+  :focus-visible {
+    outline: 2px solid var(--color-mist-400);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background-color: var(--color-mist-200);
+    color: var(--color-hur-900);
+  }
+}
+
+@layer utilities {
+  /* Locked measures. Body copy never runs the full page width. */
+  .measure {
+    max-width: 65ch;
+  }
+  .measure-lead {
+    max-width: 52ch;
+  }
+
+  /* Motion moment one: the hero entrance.
+     Done in CSS rather than JS so the copy is never stranded at opacity 0
+     when scripts are slow or blocked, and so there is no server/client
+     mismatch on first paint. Stagger comes from --rise-delay. */
+  .rise {
+    animation: rise-in 0.6s var(--ease-calm) both;
+    animation-delay: var(--rise-delay, 0ms);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    /* Without this the stagger delay would still hold content invisible. */
+    animation-delay: 0ms !important;
+    transition-delay: 0ms !important;
+  }
+}

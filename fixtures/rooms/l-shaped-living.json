@@ -1,0 +1,184 @@
+{
+  "schema_version": 0,
+  "pipeline_version": "0.0.0",
+  "units": "mm",
+  "up": "+Y",
+  "floor_polygon": [
+    [
+      -2291,
+      -2093
+    ],
+    [
+      3109,
+      -2093
+    ],
+    [
+      3109,
+      307
+    ],
+    [
+      909,
+      307
+    ],
+    [
+      909,
+      2707
+    ],
+    [
+      -2291,
+      2707
+    ]
+  ],
+  "ceiling_height_mm": 2650,
+  "ceiling_observed": true,
+  "walls": [
+    {
+      "id": "W1",
+      "start": [
+        -2291,
+        -2093
+      ],
+      "end": [
+        3109,
+        -2093
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 5400
+    },
+    {
+      "id": "W2",
+      "start": [
+        3109,
+        -2093
+      ],
+      "end": [
+        3109,
+        307
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 2400
+    },
+    {
+      "id": "W3",
+      "start": [
+        3109,
+        307
+      ],
+      "end": [
+        909,
+        307
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 2200
+    },
+    {
+      "id": "W4",
+      "start": [
+        909,
+        307
+      ],
+      "end": [
+        909,
+        2707
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 2400
+    },
+    {
+      "id": "W5",
+      "start": [
+        909,
+        2707
+      ],
+      "end": [
+        -2291,
+        2707
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 3200
+    },
+    {
+      "id": "W6",
+      "start": [
+        -2291,
+        2707
+      ],
+      "end": [
+        -2291,
+        -2093
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 4800
+    }
+  ],
+  "openings": [
+    {
+      "id": "O1",
+      "wall_id": "W6",
+      "type": "door",
+      "offset_mm": 1800,
+      "width_mm": 830,
+      "sill_mm": 0,
+      "height_mm": 2040,
+      "swing": "unknown",
+      "confidence": 0.9
+    },
+    {
+      "id": "O2",
+      "wall_id": "W1",
+      "type": "window",
+      "offset_mm": 2000,
+      "width_mm": 1600,
+      "sill_mm": 900,
+      "height_mm": 1200,
+      "swing": "unknown",
+      "confidence": 0.85
+    },
+    {
+      "id": "O3",
+      "wall_id": "W4",
+      "type": "window",
+      "offset_mm": 600,
+      "width_mm": 1200,
+      "sill_mm": 900,
+      "height_mm": 1200,
+      "swing": "unknown",
+      "confidence": 0.85
+    }
+  ],
+  "fixed_obstacles": [],
+  "appearance": {
+    "floor": {
+      "color": "#efecea",
+      "material": "oak"
+    },
+    "ceiling": {
+      "color": "#f6f9fc",
+      "material": "paint"
+    },
+    "tier": 0
+  },
+  "scale": {
+    "factor": 1.0,
+    "sources": [
+      {
+        "name": "fixture",
+        "factor": 1.0,
+        "weight": 1.0
+      }
+    ],
+    "confidence": "high",
+    "user_calibrated": true
+  },
+  "quality": {
+    "coverage_pct": 96.0,
+    "frames_used": 112,
+    "warnings": []
+  }
+}

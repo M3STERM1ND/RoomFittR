@@ -1,0 +1,141 @@
+{
+  "schema_version": 0,
+  "pipeline_version": "0.0.0",
+  "units": "mm",
+  "up": "+Y",
+  "floor_polygon": [
+    [
+      -2600,
+      -950
+    ],
+    [
+      2600,
+      -950
+    ],
+    [
+      2600,
+      950
+    ],
+    [
+      -2600,
+      950
+    ]
+  ],
+  "ceiling_height_mm": 2400,
+  "ceiling_observed": false,
+  "walls": [
+    {
+      "id": "W1",
+      "start": [
+        -2600,
+        -950
+      ],
+      "end": [
+        2600,
+        -950
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 5200
+    },
+    {
+      "id": "W2",
+      "start": [
+        2600,
+        -950
+      ],
+      "end": [
+        2600,
+        950
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 1900
+    },
+    {
+      "id": "W3",
+      "start": [
+        2600,
+        950
+      ],
+      "end": [
+        -2600,
+        950
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 5200
+    },
+    {
+      "id": "W4",
+      "start": [
+        -2600,
+        950
+      ],
+      "end": [
+        -2600,
+        -950
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 1900
+    }
+  ],
+  "openings": [
+    {
+      "id": "O1",
+      "wall_id": "W4",
+      "type": "door",
+      "offset_mm": 300,
+      "width_mm": 760,
+      "sill_mm": 0,
+      "height_mm": 2040,
+      "swing": "unknown",
+      "confidence": 0.9
+    },
+    {
+      "id": "O2",
+      "wall_id": "W2",
+      "type": "window",
+      "offset_mm": 500,
+      "width_mm": 900,
+      "sill_mm": 900,
+      "height_mm": 1200,
+      "swing": "unknown",
+      "confidence": 0.85
+    }
+  ],
+  "fixed_obstacles": [],
+  "appearance": {
+    "floor": {
+      "color": "#efecea",
+      "material": "oak"
+    },
+    "ceiling": {
+      "color": "#f6f9fc",
+      "material": "paint"
+    },
+    "tier": 0
+  },
+  "scale": {
+    "factor": 1.0,
+    "sources": [
+      {
+        "name": "fixture",
+        "factor": 1.0,
+        "weight": 1.0
+      }
+    ],
+    "confidence": "low",
+    "user_calibrated": false
+  },
+  "quality": {
+    "coverage_pct": 71.0,
+    "frames_used": 112,
+    "warnings": [
+      "CEILING_NOT_OBSERVED",
+      "SCALE_UNCALIBRATED",
+      "LOW_COVERAGE"
+    ]
+  }
+}

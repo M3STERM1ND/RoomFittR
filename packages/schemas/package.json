@@ -1,0 +1,22 @@
+{
+  "name": "@roomfittr/schemas",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./generated/index.ts",
+  "types": "./generated/index.ts",
+  "exports": {
+    ".": "./generated/index.ts",
+    "./*.schema.json": "./src/*.schema.json"
+  },
+  "scripts": {
+    "gen": "node scripts/generate.mjs",
+    "check": "node scripts/generate.mjs --check",
+    "lint": "echo \"(schemas: no lint)\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "json-schema-to-typescript": "^15.0.4",
+    "typescript": "^5"
+  }
+}

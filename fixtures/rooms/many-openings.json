@@ -1,0 +1,197 @@
+{
+  "schema_version": 0,
+  "pipeline_version": "0.0.0",
+  "units": "mm",
+  "up": "+Y",
+  "floor_polygon": [
+    [
+      -2500,
+      -1700
+    ],
+    [
+      2500,
+      -1700
+    ],
+    [
+      2500,
+      1700
+    ],
+    [
+      -2500,
+      1700
+    ]
+  ],
+  "ceiling_height_mm": 2700,
+  "ceiling_observed": true,
+  "walls": [
+    {
+      "id": "W1",
+      "start": [
+        -2500,
+        -1700
+      ],
+      "end": [
+        2500,
+        -1700
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 5000
+    },
+    {
+      "id": "W2",
+      "start": [
+        2500,
+        -1700
+      ],
+      "end": [
+        2500,
+        1700
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 3400
+    },
+    {
+      "id": "W3",
+      "start": [
+        2500,
+        1700
+      ],
+      "end": [
+        -2500,
+        1700
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 5000
+    },
+    {
+      "id": "W4",
+      "start": [
+        -2500,
+        1700
+      ],
+      "end": [
+        -2500,
+        -1700
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 3400
+    }
+  ],
+  "openings": [
+    {
+      "id": "O1",
+      "wall_id": "W1",
+      "type": "window",
+      "offset_mm": 500,
+      "width_mm": 1200,
+      "sill_mm": 900,
+      "height_mm": 1200,
+      "swing": "unknown",
+      "confidence": 0.85
+    },
+    {
+      "id": "O2",
+      "wall_id": "W1",
+      "type": "window",
+      "offset_mm": 2200,
+      "width_mm": 1200,
+      "sill_mm": 900,
+      "height_mm": 1200,
+      "swing": "unknown",
+      "confidence": 0.85
+    },
+    {
+      "id": "O3",
+      "wall_id": "W1",
+      "type": "window",
+      "offset_mm": 3600,
+      "width_mm": 1000,
+      "sill_mm": 900,
+      "height_mm": 1200,
+      "swing": "unknown",
+      "confidence": 0.85
+    },
+    {
+      "id": "O4",
+      "wall_id": "W2",
+      "type": "door",
+      "offset_mm": 400,
+      "width_mm": 830,
+      "sill_mm": 0,
+      "height_mm": 2040,
+      "swing": "unknown",
+      "confidence": 0.9
+    },
+    {
+      "id": "O5",
+      "wall_id": "W3",
+      "type": "door",
+      "offset_mm": 1000,
+      "width_mm": 830,
+      "sill_mm": 0,
+      "height_mm": 2040,
+      "swing": "unknown",
+      "confidence": 0.9
+    },
+    {
+      "id": "O6",
+      "wall_id": "W4",
+      "type": "door",
+      "offset_mm": 1400,
+      "width_mm": 760,
+      "sill_mm": 0,
+      "height_mm": 2040,
+      "swing": "unknown",
+      "confidence": 0.9
+    }
+  ],
+  "fixed_obstacles": [
+    {
+      "id": "F1",
+      "label": "radiator",
+      "center": [
+        0,
+        0
+      ],
+      "size": [
+        1200,
+        120,
+        600
+      ],
+      "yaw_deg": 0.0,
+      "source": "detected"
+    }
+  ],
+  "appearance": {
+    "floor": {
+      "color": "#efecea",
+      "material": "oak"
+    },
+    "ceiling": {
+      "color": "#f6f9fc",
+      "material": "paint"
+    },
+    "tier": 0
+  },
+  "scale": {
+    "factor": 1.0,
+    "sources": [
+      {
+        "name": "fixture",
+        "factor": 1.0,
+        "weight": 1.0
+      }
+    ],
+    "confidence": "high",
+    "user_calibrated": true
+  },
+  "quality": {
+    "coverage_pct": 96.0,
+    "frames_used": 112,
+    "warnings": []
+  }
+}
