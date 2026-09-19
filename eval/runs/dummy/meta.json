@@ -1,0 +1,10 @@
+{
+  "run": "dummy",
+  "produced_by": "hand-built, not a pipeline",
+  "why": "Proves the harness runs end to end before any reconstruction code exists (Phase 0 DoD).",
+  "profiles": {
+    "gt-000-a": "careful, small scale error",
+    "gt-000-b": "careful, other phone",
+    "gt-000-c": "sloppy: 9% scale error, missed window"
+  }
+}

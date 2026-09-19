@@ -1,0 +1,143 @@
+room_id: gt-007
+name: ARKitScenes 43828231
+room_type: living
+measured_on: '2026-09-17'
+measured_by: eval/adapters/arkitscenes.py
+instrument: ARKitScenes FARO laser depth, scene 43828231
+source:
+  tier: A
+  dataset: arkitscenes
+  scene_id: '43828231'
+  derived_by: eval/adapters/arkitscenes.py
+ceiling_height_mm: 2641
+floor_polygon_mm:
+- - -2908
+  - 450
+- - -2755
+  - 42
+- - -2758
+  - -550
+- - -3276
+  - -626
+- - -3258
+  - -900
+- - -3058
+  - -1500
+- - -3228
+  - -1848
+- - -1604
+  - -1746
+- - -1554
+  - -1395
+- - -858
+  - -1395
+- - -858
+  - -1650
+- - 692
+  - -1550
+- - 1392
+  - -1600
+- - 2241
+  - -1665
+- - 2290
+  - -1220
+- - 2683
+  - -1171
+- - 2583
+  - 2040
+- - 1492
+  - 2050
+- - 1342
+  - 2300
+- - 1342
+  - 2700
+- - 444
+  - 1353
+- - -1608
+  - 1350
+- - -1967
+  - 1200
+- - -2647
+  - 1249
+- - -2597
+  - 553
+walls:
+- id: W1
+  length_mm: 436
+- id: W2
+  length_mm: 592
+- id: W3
+  length_mm: 524
+- id: W4
+  length_mm: 275
+- id: W5
+  length_mm: 632
+- id: W6
+  length_mm: 387
+- id: W7
+  length_mm: 1627
+- id: W8
+  length_mm: 355
+- id: W9
+  length_mm: 696
+- id: W10
+  length_mm: 255
+- id: W11
+  length_mm: 1553
+- id: W12
+  length_mm: 702
+- id: W13
+  length_mm: 851
+- id: W14
+  length_mm: 448
+- id: W15
+  length_mm: 396
+- id: W16
+  length_mm: 3213
+- id: W17
+  length_mm: 1091
+- id: W18
+  length_mm: 292
+- id: W19
+  length_mm: 400
+- id: W20
+  length_mm: 1619
+- id: W21
+  length_mm: 2052
+- id: W22
+  length_mm: 389
+- id: W23
+  length_mm: 682
+- id: W24
+  length_mm: 698
+- id: W25
+  length_mm: 328
+openings: []
+captures:
+- capture_id: gt-007-a
+  device: iPad Pro (ARKitScenes capture)
+  style: careful
+  file: captures/gt-tmp-a.mov
+  note: copy or symlink from D:/arkitscenes/raw/Training/43828231/43828231.mov
+notes: 'Tier A ground truth: derived from ARKitScenes'' FARO laser depth, not measured
+  by hand. openings is empty on purpose -- ARKitScenes annotates 17 furniture classes
+  and no doors or windows, so E5 is decided on Tier B (3.10). Spot-check the floor
+  polygon against the capture before trusting E4 on it.'
+traits:
+- cluttered
+furniture:
+- label: table
+  footprint_mm:
+  - 2104
+  - 1237
+  height_mm: 808
+- label: sofa
+  footprint_mm:
+  - 2058
+  - 948
+  height_mm: 833
+- label: table
+  footprint_mm:
+  - 2409
+  - 767
+  height_mm: 643

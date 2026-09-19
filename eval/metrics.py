@@ -89,7 +89,7 @@ def ceiling_error_pct(truth: dict[str, Any], predicted: dict[str, Any]) -> float
     p = predicted.get("ceiling_height_mm")
     if not t or not p:
         return math.nan
-    return abs(p - t) / t * 100.0
+    return abs(float(p) - float(t)) / float(t) * 100.0
 
 
 @dataclass
@@ -158,9 +158,7 @@ class OpeningMetrics:
         return percentile(self.offset_errors_mm, 0.5)
 
 
-def opening_metrics(
-    truth: dict[str, Any], predicted: dict[str, Any], kind: str
-) -> OpeningMetrics:
+def opening_metrics(truth: dict[str, Any], predicted: dict[str, Any], kind: str) -> OpeningMetrics:
     """Greedy nearest-match on the same wall, within the tolerance.
 
     Greedy rather than optimal assignment: with a handful of openings per wall
@@ -245,6 +243,7 @@ def score_capture(
 # Gate evaluation                                                              #
 # --------------------------------------------------------------------------- #
 
+
 @dataclass
 class GateResult:
     experiment: str
@@ -275,12 +274,10 @@ def evaluate_gates(scores: list[RoomScore], calibrated: bool) -> list[GateResult
     results = [
         GateResult(
             experiment=exp,
-            question="Is scale good enough?" if not calibrated else "Does one measurement fix scale?",
+            question=("Does one measurement fix scale?" if calibrated else "Is scale good enough?"),
             measured=f"median {fmt(median)}, p90 {fmt(p90)}",
             criterion=f"median <= {med_limit}%, p90 <= {p90_limit}%",
-            passed=None
-            if math.isnan(median)
-            else (median <= med_limit and p90 <= p90_limit),
+            passed=None if math.isnan(median) else (median <= med_limit and p90 <= p90_limit),
         )
     ]
 
@@ -297,7 +294,9 @@ def evaluate_gates(scores: list[RoomScore], calibrated: bool) -> list[GateResult
         )
     else:
         results.append(
-            GateResult("E4", "Is the floor polygon right?", "no data", "IoU >= 0.85 on >= 80%", None)
+            GateResult(
+                "E4", "Is the floor polygon right?", "no data", "IoU >= 0.85 on >= 80%", None
+            )
         )
 
     for kind, limit, attr in (("door", 0.85, "doors"), ("window", 0.80, "windows")):

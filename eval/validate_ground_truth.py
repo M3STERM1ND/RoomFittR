@@ -66,9 +66,13 @@ def check_document(doc: dict[str, Any], validator: Draft7Validator) -> list[str]
     for cid in capture_ids:
         if not cid.startswith(doc["room_id"]):
             problems.append(f"capture {cid} does not belong to {doc['room_id']}")
-    if not any(c["style"] == "sloppy" for c in doc["captures"]):
-        # E8 needs one per room, and it is the experiment most likely to be
-        # skipped when someone is tired of filming.
+    # E8 needs a sloppy capture per room, and it is the experiment most likely to
+    # be skipped when someone is tired of filming -- so it is enforced. But only
+    # for rooms we filmed ourselves: a Tier A scene comes with whatever capture
+    # the dataset shot, and 3.10 decides E8 on Tier B for exactly that reason.
+    # Demanding one here would make every public scene unusable.
+    tier = doc.get("source", {}).get("tier", "B")
+    if tier == "B" and not any(c["style"] == "sloppy" for c in doc["captures"]):
         problems.append("no sloppy capture: E8 (capture robustness) cannot be scored")
 
     poly = doc.get("floor_polygon_mm")

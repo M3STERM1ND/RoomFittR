@@ -1,0 +1,157 @@
+room_id: gt-009
+name: ARKitScenes 45261292
+room_type: bedroom
+measured_on: '2026-09-17'
+measured_by: eval/adapters/arkitscenes.py
+instrument: ARKitScenes FARO laser depth, scene 45261292
+source:
+  tier: A
+  dataset: arkitscenes
+  scene_id: '45261292'
+  derived_by: eval/adapters/arkitscenes.py
+ceiling_height_mm: 2529
+floor_polygon_mm:
+- - -2018
+  - -1045
+- - -2018
+  - -1926
+- - -467
+  - -1878
+- - -151
+  - -1778
+- - 1333
+  - -1828
+- - 1283
+  - -478
+- - 1533
+  - 22
+- - 1483
+  - 572
+- - 1341
+  - 1876
+- - 683
+  - 2541
+- - 358
+  - 2671
+- - -417
+  - 2622
+- - -866
+  - 2500
+- - -1069
+  - 2196
+- - -1118
+  - 1022
+- - -1417
+  - 872
+- - -1146
+  - 782
+- - -75
+  - 884
+- - -267
+  - 1172
+- - -267
+  - 1922
+- - -17
+  - 2122
+- - 683
+  - 2322
+- - 733
+  - 1622
+- - 833
+  - 572
+- - 933
+  - -115
+- - 483
+  - -315
+- - 483
+  - -859
+- - -595
+  - -810
+- - -889
+  - -1045
+walls:
+- id: W1
+  length_mm: 881
+- id: W2
+  length_mm: 1552
+- id: W3
+  length_mm: 331
+- id: W4
+  length_mm: 1485
+- id: W5
+  length_mm: 1351
+- id: W6
+  length_mm: 559
+- id: W7
+  length_mm: 552
+- id: W8
+  length_mm: 1312
+- id: W9
+  length_mm: 936
+- id: W10
+  length_mm: 350
+- id: W11
+  length_mm: 777
+- id: W12
+  length_mm: 465
+- id: W13
+  length_mm: 366
+- id: W14
+  length_mm: 1175
+- id: W15
+  length_mm: 335
+- id: W16
+  length_mm: 286
+- id: W17
+  length_mm: 1076
+- id: W18
+  length_mm: 346
+- id: W19
+  length_mm: 750
+- id: W20
+  length_mm: 320
+- id: W21
+  length_mm: 728
+- id: W22
+  length_mm: 702
+- id: W23
+  length_mm: 1055
+- id: W24
+  length_mm: 694
+- id: W25
+  length_mm: 492
+- id: W26
+  length_mm: 544
+- id: W27
+  length_mm: 1079
+- id: W28
+  length_mm: 376
+- id: W29
+  length_mm: 1129
+openings: []
+captures:
+- capture_id: gt-009-a
+  device: iPad Pro (ARKitScenes capture)
+  style: careful
+  file: captures/gt-tmp-a.mov
+  note: copy or symlink from D:/arkitscenes/raw/Training/45261292/45261292.mov
+notes: 'Tier A ground truth: derived from ARKitScenes'' FARO laser depth, not measured
+  by hand. openings is empty on purpose -- ARKitScenes annotates 17 furniture classes
+  and no doors or windows, so E5 is decided on Tier B (3.10). Spot-check the floor
+  polygon against the capture before trusting E4 on it.'
+furniture:
+- label: bed
+  footprint_mm:
+  - 2111
+  - 1499
+  height_mm: 660
+- label: cabinet
+  footprint_mm:
+  - 1994
+  - 1075
+  height_mm: 631
+- label: cabinet
+  footprint_mm:
+  - 1269
+  - 1219
+  height_mm: 534

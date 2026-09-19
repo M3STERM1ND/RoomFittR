@@ -115,10 +115,11 @@ def _cell(value: Any) -> str:
 
 
 def write_markdown(summary: RunSummary, calibrated: bool, out: Path) -> None:
+    mode = "calibrated (one user measurement, E3)" if calibrated else "uncalibrated (E2)"
     lines = [
         f"# Evaluation report: `{summary.run_name}`",
         "",
-        f"Scale mode: **{'calibrated (one user measurement, E3)' if calibrated else 'uncalibrated (E2)'}**",
+        f"Scale mode: **{mode}**",
         f"Captures scored: **{len(summary.scores)}**",
         "",
         "## Phase 1 gate (implementation-plan.md 3.10)",
@@ -126,9 +127,12 @@ def write_markdown(summary: RunSummary, calibrated: bool, out: Path) -> None:
         "| Experiment | Question | Measured | Criterion | Result |",
         "|---|---|---|---|---|",
     ]
+    verdicts = {None: "not enough data", True: "**PASS**", False: "**FAIL**"}
     for g in summary.gates:
-        verdict = "not enough data" if g.passed is None else ("**PASS**" if g.passed else "**FAIL**")
-        lines.append(f"| {g.experiment} | {g.question} | {g.measured} | {g.criterion} | {verdict} |")
+        verdict = verdicts[g.passed]
+        lines.append(
+            f"| {g.experiment} | {g.question} | {g.measured} | {g.criterion} | {verdict} |"
+        )
 
     lines += ["", "## Per-capture metrics", ""]
     if summary.scores:

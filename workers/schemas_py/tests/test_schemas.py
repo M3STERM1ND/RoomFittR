@@ -32,7 +32,8 @@ FIXTURES = sorted(FIXTURE_DIR.glob("*.json"))
 
 
 def load_schema(name: str) -> dict[str, Any]:
-    return json.loads((SCHEMA_DIR / name).read_text(encoding="utf-8"))
+    doc: dict[str, Any] = json.loads((SCHEMA_DIR / name).read_text(encoding="utf-8"))
+    return doc
 
 
 def validator_for(name: str) -> Draft7Validator:
@@ -107,7 +108,9 @@ def test_fixture_geometry_is_self_consistent(path: Path) -> None:
 
 
 def _valid_doc() -> dict[str, Any]:
-    return json.loads((FIXTURE_DIR / "rectangular-living.json").read_text(encoding="utf-8"))
+    text = (FIXTURE_DIR / "rectangular-living.json").read_text(encoding="utf-8")
+    doc: dict[str, Any] = json.loads(text)
+    return doc
 
 
 def test_unknown_field_is_rejected() -> None:

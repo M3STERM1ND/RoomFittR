@@ -1,0 +1,123 @@
+room_id: gt-005
+name: ARKitScenes 42898342
+room_type: bedroom
+measured_on: '2026-09-17'
+measured_by: eval/adapters/arkitscenes.py
+instrument: ARKitScenes FARO laser depth, scene 42898342
+source:
+  tier: A
+  dataset: arkitscenes
+  scene_id: '42898342'
+  derived_by: eval/adapters/arkitscenes.py
+ceiling_height_mm: 2479
+floor_polygon_mm:
+- - -1973
+  - -2159
+- - -1386
+  - -2159
+- - -1173
+  - -2347
+- - -523
+  - -2147
+- - -793
+  - -2047
+- - -793
+  - -1505
+- - -363
+  - -698
+- - 2777
+  - -897
+- - 772
+  - -531
+- - 827
+  - 1203
+- - 1677
+  - 1303
+- - 2569
+  - 1108
+- - 2569
+  - 1524
+- - -215
+  - 1673
+- - -268
+  - 1202
+- - -1040
+  - 1202
+- - -1123
+  - 153
+- - -1034
+  - -540
+- - -1233
+  - -1156
+- - -1973
+  - -1847
+walls:
+- id: W1
+  length_mm: 587
+- id: W2
+  length_mm: 284
+- id: W3
+  length_mm: 680
+- id: W4
+  length_mm: 288
+- id: W5
+  length_mm: 542
+- id: W6
+  length_mm: 914
+- id: W7
+  length_mm: 3146
+- id: W8
+  length_mm: 2038
+- id: W9
+  length_mm: 1735
+- id: W10
+  length_mm: 856
+- id: W11
+  length_mm: 913
+- id: W12
+  length_mm: 416
+- id: W13
+  length_mm: 2788
+- id: W14
+  length_mm: 474
+- id: W15
+  length_mm: 772
+- id: W16
+  length_mm: 1052
+- id: W17
+  length_mm: 699
+- id: W18
+  length_mm: 647
+- id: W19
+  length_mm: 1012
+- id: W20
+  length_mm: 312
+openings: []
+captures:
+- capture_id: gt-005-a
+  device: iPad Pro (ARKitScenes capture)
+  style: careful
+  file: captures/gt-tmp-a.mov
+  note: copy or symlink from D:/arkitscenes/raw/Training/42898342/42898342.mov
+notes: 'Tier A ground truth: derived from ARKitScenes'' FARO laser depth, not measured
+  by hand. openings is empty on purpose -- ARKitScenes annotates 17 furniture classes
+  and no doors or windows, so E5 is decided on Tier B (3.10). Spot-check the floor
+  polygon against the capture before trusting E4 on it.'
+traits:
+- sparse
+furniture:
+- label: bed
+  footprint_mm:
+  - 2136
+  - 1575
+  height_mm: 513
+- label: cabinet
+  footprint_mm:
+  - 1874
+  - 814
+  height_mm: 568
+- label: cabinet
+  footprint_mm:
+  - 503
+  - 424
+  height_mm: 400

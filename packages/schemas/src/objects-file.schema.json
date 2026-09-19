@@ -7,7 +7,9 @@
   "additionalProperties": false,
   "required": ["schema_version", "pipeline_version", "units", "objects"],
   "properties": {
-    "schema_version": { "$ref": "common.schema.json#/definitions/schema_version" },
+    "schema_version": {
+      "$ref": "common.schema.json#/definitions/schema_version"
+    },
     "pipeline_version": { "$ref": "common.schema.json#/definitions/semver" },
     "units": { "const": "mm" },
 

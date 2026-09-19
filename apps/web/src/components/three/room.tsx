@@ -94,7 +94,11 @@ function Shell() {
 
       {/* Right and front walls sit behind the camera and are never seen, but
           they close the box, so no frame edge can ever look out into nothing. */}
-      <mesh position={[W / 2, H / 2, 0]} rotation-y={-Math.PI / 2} receiveShadow>
+      <mesh
+        position={[W / 2, H / 2, 0]}
+        rotation-y={-Math.PI / 2}
+        receiveShadow
+      >
         <planeGeometry args={[D, H]} />
         <Matte color={WALL} />
       </mesh>
@@ -293,7 +297,11 @@ function FloorLamp() {
 
 function Rug() {
   return (
-    <mesh position={[-1.3, 0.004, 0.05]} rotation-x={-Math.PI / 2} receiveShadow>
+    <mesh
+      position={[-1.3, 0.004, 0.05]}
+      rotation-x={-Math.PI / 2}
+      receiveShadow
+    >
       <planeGeometry args={[3.0, 3.2]} />
       <Matte color={RUG} />
     </mesh>

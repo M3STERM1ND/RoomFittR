@@ -12,12 +12,10 @@ const variants: Record<Variant, string> = {
   // The one signature hover on the page: a 1px lift, nothing more.
   primary:
     "bg-hur-900 text-white border-transparent hover:-translate-y-px hover:shadow-lift",
-  secondary:
-    "bg-transparent text-hur-900 border-hur-200 hover:bg-mist-100",
+  secondary: "bg-transparent text-hur-900 border-hur-200 hover:bg-mist-100",
   // Primary inverted, for the one band that runs on hur-900. Same lift; the
   // shadow is dropped because a cool shadow does nothing on a dark ground.
-  inverse:
-    "bg-white text-hur-900 border-transparent hover:-translate-y-px",
+  inverse: "bg-white text-hur-900 border-transparent hover:-translate-y-px",
 };
 
 type Props = {

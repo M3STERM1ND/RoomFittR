@@ -5,7 +5,16 @@
   "description": "One laser-measured real room, plus the captures taken of it (implementation-plan.md 3.10). This is the yardstick every reconstruction experiment is scored against, so it is measured by hand and checked into git. Millimetres throughout, matching 2.4.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["room_id", "name", "room_type", "measured_on", "ceiling_height_mm", "walls", "openings", "captures"],
+  "required": [
+    "room_id",
+    "name",
+    "room_type",
+    "measured_on",
+    "ceiling_height_mm",
+    "walls",
+    "openings",
+    "captures"
+  ],
   "properties": {
     "room_id": {
       "description": "Stable id, also the filename stem. Used to join a capture to its truth.",
@@ -15,24 +24,62 @@
     "name": { "type": "string", "minLength": 1 },
     "room_type": {
       "description": "3.10 asks for a spread: living rooms, bedrooms, an office, a kitchen/dining area, an open-plan space, a cluttered room and a sparse white-walled one.",
-      "enum": ["living", "bedroom", "office", "kitchen_dining", "open_plan", "other"]
+      "enum": [
+        "living",
+        "bedroom",
+        "office",
+        "kitchen_dining",
+        "open_plan",
+        "other"
+      ]
     },
     "traits": {
       "description": "Why this room is in the set. The dataset is only useful if it covers the hard cases on purpose.",
       "type": "array",
       "items": {
-        "enum": ["cluttered", "sparse", "white_walls", "large_mirror", "glass", "dark", "bay_window", "sloped_ceiling", "non_manhattan"]
+        "enum": [
+          "cluttered",
+          "sparse",
+          "white_walls",
+          "large_mirror",
+          "glass",
+          "dark",
+          "bay_window",
+          "sloped_ceiling",
+          "non_manhattan"
+        ]
       }
     },
     "measured_on": { "type": "string", "format": "date" },
     "measured_by": { "type": "string", "minLength": 1 },
     "instrument": {
-      "description": "Which laser measure. A systematic instrument error is worth being able to trace later.",
+      "description": "How this room was measured: a laser measure's model for Tier B, or the dataset and scene for Tier A. A systematic instrument error is worth being able to trace later.",
       "type": "string",
       "minLength": 1
     },
 
-    "ceiling_height_mm": { "type": "integer", "minimum": 2000, "maximum": 4500 },
+    "source": {
+      "description": "Where this ground truth came from (3.10). Tier A is derived from a public dataset's laser scan by an adapter; Tier B is measured by hand in one of our own rooms. The distinction decides which experiments a room can settle: E2, E3 and E8 are only decided on Tier B.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier"],
+      "properties": {
+        "tier": { "enum": ["A", "B"] },
+        "dataset": { "enum": ["scannetpp", "arkitscenes"] },
+        "scene_id": { "type": "string", "minLength": 1 },
+        "derived_by": {
+          "description": "The adapter that produced this file, so it can be regenerated.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+
+    "ceiling_height_mm": {
+      "type": "integer",
+      "minimum": 2000,
+      "maximum": 4500
+    },
 
     "floor_polygon_mm": {
       "description": "Optional but strongly wanted: without it E4 (polygon IoU) cannot be scored for this room. Derive it from the measured wall lengths and the hand-drawn plan. Same conventions as RoomModel: CCW [x, z], centroid at the origin.",
@@ -68,7 +115,15 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "type", "wall_id", "offset_mm", "width_mm", "sill_mm", "height_mm"],
+        "required": [
+          "id",
+          "type",
+          "wall_id",
+          "offset_mm",
+          "width_mm",
+          "sill_mm",
+          "height_mm"
+        ],
         "properties": {
           "id": { "type": "string", "pattern": "^O[0-9]+$" },
           "type": { "enum": ["door", "window", "passage"] },
@@ -126,7 +181,12 @@
             "enum": ["careful", "sloppy"]
           },
           "orientation": { "enum": ["landscape", "portrait"] },
-          "duration_s": { "type": "number", "minimum": 20, "maximum": 180 },
+          "duration_s": {
+            "description": "3.2 caps a product capture at 180 s. Tier A dataset captures predate that rule, so the upper bound is looser here than the product's.",
+            "type": "number",
+            "minimum": 20,
+            "maximum": 900
+          },
           "file": {
             "description": "Path relative to eval/. The video itself is gitignored.",
             "type": "string",

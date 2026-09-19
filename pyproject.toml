@@ -10,6 +10,8 @@ dependencies = [
     "pyyaml>=6.0",
     # Polygon IoU for E4. Listed in the approved stack (1.1 geometry utilities).
     "shapely>=2.0",
+    "plyfile>=1.1.5",
+    "pillow>=12.3.0",
 ]
 
 [dependency-groups]
@@ -20,6 +22,7 @@ dev = [
     "mypy>=1.13",
     "types-pyyaml>=6.0",
     "types-jsonschema>=4.23",
+    "types-shapely>=2.1.0.20260728",
 ]
 
 [tool.uv]
@@ -52,6 +55,17 @@ python_version = "3.11"
 strict = true
 # Generated models are checked by their own generator, not by us.
 exclude = "workers/schemas_py/roomfittr_schemas/"
+
+# numpy ships its own stubs, and from 2.3 they are written with PEP 695 `type`
+# statements, which mypy only parses when python_version >= 3.12. Checking
+# against 3.11 therefore dies inside numpy/__init__.pyi with a syntax error
+# before it reaches our code. We never import numpy directly (it arrives via
+# shapely), so skipping it costs nothing here; revisit if a worker starts
+# doing real array work, at which point raising python_version is the fix.
+[[tool.mypy.overrides]]
+module = "numpy.*"
+follow_imports = "skip"
+follow_imports_for_stubs = true
 
 [tool.pytest.ini_options]
 testpaths = ["workers", "eval"]

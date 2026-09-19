@@ -1,0 +1,62 @@
+[
+  {
+    "scene": "41048190",
+    "room_type": "bedroom",
+    "reason": "adapter refused: 41048190: no substantial horizontal surface near the floor or the ceiling"
+  },
+  {
+    "scene": "41048247",
+    "room_type": "other",
+    "reason": "footprint 1.9 m2 is too small to be a room"
+  },
+  {
+    "scene": "42897409",
+    "room_type": "kitchen_dining",
+    "reason": "footprint 1.0 m2 is too small to be a room"
+  },
+  {
+    "scene": "42897939",
+    "room_type": "living",
+    "reason": "adapter refused: 42897939: no substantial horizontal surface near the floor or the ceiling"
+  },
+  {
+    "scene": "42898477",
+    "room_type": "living",
+    "reason": "adapter refused: 42898477: no substantial horizontal surface near the floor or the ceiling"
+  },
+  {
+    "scene": "43649421",
+    "room_type": "open_plan",
+    "reason": "footprint 3.2 m2 is too small to be a room"
+  },
+  {
+    "scene": "44796485",
+    "room_type": "office",
+    "reason": "adapter refused: 44796485: floor outline collapsed to 2 corner(s)"
+  },
+  {
+    "scene": "45662905",
+    "room_type": "bedroom",
+    "reason": "footprint 3.8 m2 is too small to be a room"
+  },
+  {
+    "scene": "45663064",
+    "room_type": "open_plan",
+    "reason": "adapter refused: 45663064: floor outline collapsed to 2 corner(s)"
+  },
+  {
+    "scene": "47331576",
+    "room_type": "living",
+    "reason": "footprint 2.6 m2 is too small to be a room"
+  },
+  {
+    "scene": "47333624",
+    "room_type": "living",
+    "reason": "footprint 2.9 m2 is too small to be a room"
+  },
+  {
+    "scene": "47333973",
+    "room_type": "bedroom",
+    "reason": "footprint 2.4 m2 is too small to be a room"
+  }
+]

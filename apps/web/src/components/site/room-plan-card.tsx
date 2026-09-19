@@ -44,11 +44,32 @@ export function RoomPlanCard() {
           />
 
           {/* window on the top wall */}
-          <line x1="150" y1="44" x2="250" y2="44" stroke="#f6f9fc" strokeWidth="7" />
-          <line x1="150" y1="44" x2="250" y2="44" stroke="#3e6b90" strokeWidth="3" />
+          <line
+            x1="150"
+            y1="44"
+            x2="250"
+            y2="44"
+            stroke="#f6f9fc"
+            strokeWidth="7"
+          />
+          <line
+            x1="150"
+            y1="44"
+            x2="250"
+            y2="44"
+            stroke="#3e6b90"
+            strokeWidth="3"
+          />
 
           {/* door gap and swing on the bottom wall */}
-          <line x1="100" y1="224" x2="170" y2="224" stroke="#f6f9fc" strokeWidth="7" />
+          <line
+            x1="100"
+            y1="224"
+            x2="170"
+            y2="224"
+            stroke="#f6f9fc"
+            strokeWidth="7"
+          />
           <path
             d="M170 224 A70 70 0 0 0 100 154"
             fill="none"

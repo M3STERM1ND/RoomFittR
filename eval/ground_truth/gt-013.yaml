@@ -1,0 +1,117 @@
+room_id: gt-013
+name: ARKitScenes 47332764
+room_type: living
+measured_on: '2026-09-17'
+measured_by: eval/adapters/arkitscenes.py
+instrument: ARKitScenes FARO laser depth, scene 47332764
+source:
+  tier: A
+  dataset: arkitscenes
+  scene_id: '47332764'
+  derived_by: eval/adapters/arkitscenes.py
+ceiling_height_mm: 2711
+floor_polygon_mm:
+- - -2323
+  - 1244
+- - -2323
+  - 794
+- - -2066
+  - 742
+- - -2073
+  - 144
+- - -1886
+  - -261
+- - -1350
+  - -47
+- - -23
+  - -145
+- - -23
+  - -1906
+- - -623
+  - -2056
+- - 77
+  - -2056
+- - 727
+  - -2206
+- - 1420
+  - -2143
+- - 1420
+  - -532
+- - 1060
+  - -532
+- - 1060
+  - 733
+- - 1453
+  - 733
+- - 1453
+  - 1462
+- - -632
+  - 1462
+- - -792
+  - 1195
+walls:
+- id: W1
+  length_mm: 450
+- id: W2
+  length_mm: 262
+- id: W3
+  length_mm: 598
+- id: W4
+  length_mm: 446
+- id: W5
+  length_mm: 577
+- id: W6
+  length_mm: 1331
+- id: W7
+  length_mm: 1761
+- id: W8
+  length_mm: 618
+- id: W9
+  length_mm: 700
+- id: W10
+  length_mm: 667
+- id: W11
+  length_mm: 696
+- id: W12
+  length_mm: 1611
+- id: W13
+  length_mm: 360
+- id: W14
+  length_mm: 1265
+- id: W15
+  length_mm: 393
+- id: W16
+  length_mm: 729
+- id: W17
+  length_mm: 2085
+- id: W18
+  length_mm: 311
+- id: W19
+  length_mm: 1532
+openings: []
+captures:
+- capture_id: gt-013-a
+  device: iPad Pro (ARKitScenes capture)
+  style: careful
+  file: captures/gt-tmp-a.mov
+  note: copy or symlink from D:/arkitscenes/raw/Training/47332764/47332764.mov
+notes: 'Tier A ground truth: derived from ARKitScenes'' FARO laser depth, not measured
+  by hand. openings is empty on purpose -- ARKitScenes annotates 17 furniture classes
+  and no doors or windows, so E5 is decided on Tier B (3.10). Spot-check the floor
+  polygon against the capture before trusting E4 on it.'
+furniture:
+- label: sofa
+  footprint_mm:
+  - 2000
+  - 985
+  height_mm: 758
+- label: table
+  footprint_mm:
+  - 1212
+  - 795
+  height_mm: 538
+- label: cabinet
+  footprint_mm:
+  - 1881
+  - 472
+  height_mm: 412

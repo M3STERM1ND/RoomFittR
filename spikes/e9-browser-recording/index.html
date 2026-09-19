@@ -1,0 +1,895 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>E9 Recording Spike</title>
+    <!--
+      E9 browser recording spike (implementation-plan.md 3.10 E9, 8 Phase 0).
+
+      Throwaway by design: a single file, no build step, no dependencies, not
+      part of apps/web. It answers the questions the risk register R10 asks
+      about MediaRecorder before any capture UI is written:
+
+        1. Which container/codec does this browser actually give us?
+        2. What resolution and frame rate does getUserMedia actually deliver,
+           as opposed to what we asked for?
+        3. Does a 3-minute recording survive? (iOS Safari historically drops
+           the stream on backgrounding, and long recordings can stall.)
+        4. How large is the file, i.e. what bitrate are we really getting,
+           against the 750 MB / 3 min hard limit in 3.2?
+        5. Does resumable chunked upload work from this browser, including
+           after a deliberate network drop?
+        6. Is the DeviceMotionEvent sidecar in 3.2 available, and does iOS
+           grant the permission?
+
+      Results export as JSON so a phone session can be pasted into
+      findings.md rather than retyped.
+    -->
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #fbfaf8;
+        --fg: #1b1a18;
+        --muted: #6a6761;
+        --line: #e2ded7;
+        --card: #ffffff;
+        --ok: #1f7a4d;
+        --bad: #b3261e;
+        --warn: #8a6100;
+        --accent: #2f5d50;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #16181a;
+          --fg: #ecebe8;
+          --muted: #9a9790;
+          --line: #2e3134;
+          --card: #1e2124;
+          --ok: #5fcf95;
+          --bad: #ff8a80;
+          --warn: #e0b64b;
+          --accent: #7fc4ad;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 16px;
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          15px/1.5 ui-sans-serif,
+          system-ui,
+          -apple-system,
+          sans-serif;
+      }
+      h1 {
+        font-size: 19px;
+        margin: 0 0 4px;
+      }
+      h2 {
+        font-size: 15px;
+        margin: 0 0 8px;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      p.sub {
+        margin: 0 0 20px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      section {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 14px;
+      }
+      button {
+        font: inherit;
+        font-weight: 600;
+        padding: 11px 15px;
+        min-height: 44px;
+        border-radius: 9px;
+        border: 1px solid var(--accent);
+        background: var(--accent);
+        color: var(--bg);
+        cursor: pointer;
+      }
+      button.ghost {
+        background: transparent;
+        color: var(--fg);
+        border-color: var(--line);
+      }
+      button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+      }
+      label {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      select,
+      input {
+        font: inherit;
+        padding: 9px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: var(--bg);
+        color: var(--fg);
+        max-width: 100%;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      td,
+      th {
+        text-align: left;
+        padding: 5px 6px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+        word-break: break-word;
+      }
+      th {
+        color: var(--muted);
+        font-weight: 600;
+      }
+      code,
+      pre {
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: 12px;
+      }
+      pre {
+        white-space: pre-wrap;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px;
+        max-height: 40vh;
+        overflow: auto;
+      }
+      .ok {
+        color: var(--ok);
+        font-weight: 600;
+      }
+      .bad {
+        color: var(--bad);
+        font-weight: 600;
+      }
+      .warn {
+        color: var(--warn);
+        font-weight: 600;
+      }
+      video {
+        width: 100%;
+        max-height: 38vh;
+        background: #000;
+        border-radius: 9px;
+        margin-top: 10px;
+      }
+      .big {
+        font-variant-numeric: tabular-nums;
+        font-size: 24px;
+        font-weight: 700;
+      }
+      .log {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>E9 — browser recording spike</h1>
+    <p class="sub">
+      MediaRecorder viability for RoomFittR capture. Run every section, then
+      <strong>Export JSON</strong> and paste into
+      <code>spikes/e9-browser-recording/findings.md</code>.
+    </p>
+
+    <section>
+      <h2>1 · Environment</h2>
+      <table id="env"></table>
+    </section>
+
+    <section>
+      <h2>2 · Codec support</h2>
+      <p class="sub" style="margin: 0 0 10px">
+        <code>MediaRecorder.isTypeSupported</code>. Reported support is not
+        proof the file decodes — section 4 checks that the produced file
+        actually plays back.
+      </p>
+      <table id="codecs"></table>
+    </section>
+
+    <section>
+      <h2>3 · Camera</h2>
+      <div class="row">
+        <label for="res">Request</label>
+        <select id="res">
+          <option value="1920x1080">1080p (1920×1080)</option>
+          <option value="1280x720">720p (1280×720)</option>
+          <option value="3840x2160">4K (3840×2160)</option>
+        </select>
+        <label for="facing">Camera</label>
+        <select id="facing">
+          <option value="environment">Rear</option>
+          <option value="user">Front</option>
+        </select>
+        <button id="open">Open camera</button>
+        <button id="close" class="ghost" disabled>Close</button>
+      </div>
+      <video id="preview" playsinline muted autoplay></video>
+      <table id="track"></table>
+    </section>
+
+    <section>
+      <h2>4 · Recording</h2>
+      <div class="row">
+        <label for="mins">Target</label>
+        <select id="mins">
+          <option value="0.5">30 s (quick check)</option>
+          <option value="3" selected>3 min (the real test)</option>
+        </select>
+        <button id="rec" disabled>Record</button>
+        <button id="stop" class="ghost" disabled>Stop</button>
+      </div>
+      <p class="big" id="elapsed">0:00</p>
+      <table id="recstats"></table>
+      <p class="log" id="reclog">
+        While a 3-minute recording runs: lock the screen, switch apps, and pull
+        down the notification shade. Those are the R10 failure modes and this is
+        where they show up.
+      </p>
+      <video id="playback" controls playsinline></video>
+    </section>
+
+    <section>
+      <h2>5 · Chunked / resumable upload</h2>
+      <p class="sub" style="margin: 0 0 10px">
+        Slices the recording into 8 MB parts, the shape Uppy's S3 multipart
+        plugin uses. Leave the endpoint blank to exercise slicing and retry
+        bookkeeping with no server. Point it at an R2 presign endpoint once
+        Phase 0 task 6 is done to test the real path.
+      </p>
+      <div class="row">
+        <label for="endpoint">PUT endpoint</label>
+        <input
+          id="endpoint"
+          type="url"
+          placeholder="(blank = dry run)"
+          style="flex: 1 1 220px"
+        />
+        <button id="upload" disabled>Upload</button>
+        <button id="drop" class="ghost" disabled>Simulate network drop</button>
+      </div>
+      <table id="upstats"></table>
+    </section>
+
+    <section>
+      <h2>6 · Motion sidecar (3.2)</h2>
+      <div class="row">
+        <button id="motion">Request motion access</button>
+      </div>
+      <table id="motionstats"></table>
+    </section>
+
+    <section>
+      <h2>7 · Results</h2>
+      <div class="row">
+        <button id="export">Export JSON</button>
+        <button id="copy" class="ghost">Copy</button>
+      </div>
+      <pre id="out">Run the sections above.</pre>
+    </section>
+
+    <script>
+      "use strict";
+
+      // Every finding lands here; this object is what gets exported.
+      const R = {
+        spike: "E9",
+        recorded_at: new Date().toISOString(),
+        env: {},
+        codecs: {},
+        camera: {},
+        recording: {},
+        upload: {},
+        motion: {},
+        notes: [],
+      };
+
+      const $ = (id) => document.getElementById(id);
+      const fmtBytes = (n) =>
+        n < 1024
+          ? n + " B"
+          : n < 1048576
+            ? (n / 1024).toFixed(1) + " KB"
+            : n < 1073741824
+              ? (n / 1048576).toFixed(1) + " MB"
+              : (n / 1073741824).toFixed(2) + " GB";
+      const clock = (ms) => {
+        const s = Math.floor(ms / 1000);
+        return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+      };
+
+      function table(el, rows) {
+        el.innerHTML = rows
+          .map(
+            ([k, v, cls]) =>
+              `<tr><th>${k}</th><td class="${cls || ""}">${v}</td></tr>`,
+          )
+          .join("");
+      }
+
+      /* ---------------- 1 · environment ---------------- */
+
+      (function env() {
+        const n = navigator;
+        // Sandboxed/insecure contexts are the most common reason the whole
+        // spike appears to fail, so it is stated first rather than discovered.
+        R.env = {
+          user_agent: n.userAgent,
+          platform: n.platform,
+          secure_context: window.isSecureContext,
+          has_media_devices: !!(n.mediaDevices && n.mediaDevices.getUserMedia),
+          has_media_recorder: typeof window.MediaRecorder !== "undefined",
+          device_pixel_ratio: window.devicePixelRatio,
+          screen: `${screen.width}x${screen.height}`,
+          hardware_concurrency: n.hardwareConcurrency || null,
+          device_memory_gb: n.deviceMemory || null,
+          storage_quota_bytes: null,
+        };
+        if (n.storage && n.storage.estimate) {
+          n.storage.estimate().then((e) => {
+            R.env.storage_quota_bytes = e.quota || null;
+            render();
+          });
+        }
+        render();
+        function render() {
+          table($("env"), [
+            ["User agent", `<code>${R.env.user_agent}</code>`],
+            [
+              "Secure context",
+              R.env.secure_context
+                ? "yes"
+                : "NO — getUserMedia will be blocked",
+              R.env.secure_context ? "ok" : "bad",
+            ],
+            [
+              "getUserMedia",
+              R.env.has_media_devices ? "present" : "missing",
+              R.env.has_media_devices ? "ok" : "bad",
+            ],
+            [
+              "MediaRecorder",
+              R.env.has_media_recorder ? "present" : "missing",
+              R.env.has_media_recorder ? "ok" : "bad",
+            ],
+            ["Screen / DPR", `${R.env.screen} @ ${R.env.device_pixel_ratio}x`],
+            [
+              "Cores / memory",
+              `${R.env.hardware_concurrency ?? "?"} / ${R.env.device_memory_gb ?? "?"} GB`,
+            ],
+            [
+              "Storage quota",
+              R.env.storage_quota_bytes
+                ? fmtBytes(R.env.storage_quota_bytes)
+                : "unknown",
+            ],
+          ]);
+        }
+      })();
+
+      /* ---------------- 2 · codecs ---------------- */
+
+      (function codecs() {
+        // Ordered best-first for our purposes: the pipeline decodes with
+        // FFmpeg, so anything here is decodable server-side. What matters is
+        // which one the browser will actually produce.
+        const candidates = [
+          'video/mp4;codecs="avc1.42E01E"',
+          'video/mp4;codecs="avc1.640028"',
+          'video/mp4;codecs="hvc1"',
+          "video/mp4",
+          'video/webm;codecs="vp9"',
+          'video/webm;codecs="vp8"',
+          'video/webm;codecs="av01.0.05M.08"',
+          "video/webm",
+          "video/x-matroska;codecs=avc1",
+          "video/quicktime",
+        ];
+        const has = typeof window.MediaRecorder !== "undefined";
+        R.codecs = {};
+        const rows = candidates.map((t) => {
+          const ok = has && MediaRecorder.isTypeSupported(t);
+          R.codecs[t] = ok;
+          return [`<code>${t}</code>`, ok ? "supported" : "no", ok ? "ok" : ""];
+        });
+        table($("codecs"), rows);
+      })();
+
+      function pickMime() {
+        for (const [t, ok] of Object.entries(R.codecs)) if (ok) return t;
+        return ""; // let the browser choose
+      }
+
+      /* ---------------- 3 · camera ---------------- */
+
+      let stream = null;
+
+      $("open").onclick = async () => {
+        const [w, h] = $("res").value.split("x").map(Number);
+        const t0 = performance.now();
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: false, // 3.2 wants geometry, not sound; skipping audio avoids a second permission
+            video: {
+              width: { ideal: w },
+              height: { ideal: h },
+              frameRate: { ideal: 30 },
+              facingMode: { ideal: $("facing").value },
+            },
+          });
+        } catch (e) {
+          R.camera = {
+            error: `${e.name}: ${e.message}`,
+            requested: `${w}x${h}`,
+          };
+          table($("track"), [["Error", `${e.name}: ${e.message}`, "bad"]]);
+          return;
+        }
+        $("preview").srcObject = stream;
+        const track = stream.getVideoTracks()[0];
+        const s = track.getSettings();
+        // The gap between requested and delivered is the finding here. A phone
+        // that silently hands back 640x480 fails 3.2's >=720p hard limit.
+        R.camera = {
+          requested: `${w}x${h}`,
+          open_ms: Math.round(performance.now() - t0),
+          delivered: `${s.width}x${s.height}`,
+          frame_rate: s.frameRate ?? null,
+          facing_mode: s.facingMode ?? null,
+          label: track.label,
+          meets_720p_floor: Math.min(s.width || 0, s.height || 0) >= 720,
+        };
+        table($("track"), [
+          ["Requested", R.camera.requested],
+          [
+            "Delivered",
+            R.camera.delivered,
+            R.camera.meets_720p_floor ? "ok" : "bad",
+          ],
+          [
+            "Frame rate",
+            `${R.camera.frame_rate ?? "?"} fps`,
+            (R.camera.frame_rate ?? 0) >= 24 ? "ok" : "warn",
+          ],
+          ["Facing", R.camera.facing_mode ?? "?"],
+          ["Open latency", R.camera.open_ms + " ms"],
+          ["Device", `<code>${R.camera.label || "unnamed"}</code>`],
+          [
+            "3.2 720p floor",
+            R.camera.meets_720p_floor ? "met" : "NOT met",
+            R.camera.meets_720p_floor ? "ok" : "bad",
+          ],
+        ]);
+        $("close").disabled = false;
+        $("rec").disabled = false;
+        $("open").disabled = true;
+      };
+
+      $("close").onclick = () => {
+        if (stream) stream.getTracks().forEach((t) => t.stop());
+        stream = null;
+        $("preview").srcObject = null;
+        $("open").disabled = false;
+        $("close").disabled = true;
+        $("rec").disabled = true;
+      };
+
+      /* ---------------- 4 · recording ---------------- */
+
+      let recorder = null;
+      let chunks = [];
+      let blob = null;
+      let ticker = null;
+
+      $("rec").onclick = () => {
+        const mime = pickMime();
+        const target = parseFloat($("mins").value) * 60000;
+        chunks = [];
+        const started = performance.now();
+        // Interruptions are the whole point of the 3-minute run, so they are
+        // recorded as events rather than inferred from a broken file.
+        const events = [];
+        const onVis = () =>
+          events.push({
+            at_ms: Math.round(performance.now() - started),
+            event: `visibility:${document.visibilityState}`,
+          });
+        document.addEventListener("visibilitychange", onVis);
+
+        try {
+          recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : {});
+        } catch (e) {
+          R.recording = {
+            error: `${e.name}: ${e.message}`,
+            attempted_mime: mime,
+          };
+          table($("recstats"), [["Error", `${e.name}: ${e.message}`, "bad"]]);
+          return;
+        }
+
+        // 1 s timeslice: matches how a real uploader would stream parts, and a
+        // stalled recording shows up as a gap in chunk arrival times.
+        const arrivals = [];
+        recorder.ondataavailable = (e) => {
+          if (e.data && e.data.size) {
+            chunks.push(e.data);
+            arrivals.push({
+              at_ms: Math.round(performance.now() - started),
+              bytes: e.data.size,
+            });
+          }
+        };
+        recorder.onerror = (e) =>
+          events.push({
+            at_ms: Math.round(performance.now() - started),
+            event: `error:${e.error?.name || "unknown"}`,
+          });
+
+        recorder.onstop = () => {
+          document.removeEventListener("visibilitychange", onVis);
+          clearInterval(ticker);
+          const dur = performance.now() - started;
+          blob = new Blob(chunks, {
+            type: recorder.mimeType || mime || "video/webm",
+          });
+
+          const gaps = arrivals
+            .map((a, i) => (i ? a.at_ms - arrivals[i - 1].at_ms : a.at_ms))
+            .filter((g) => g > 3000);
+
+          R.recording = {
+            requested_mime: mime || "(browser default)",
+            actual_mime: recorder.mimeType || null,
+            target_ms: target,
+            actual_ms: Math.round(dur),
+            completed_full_duration: dur >= target - 2000,
+            bytes: blob.size,
+            mb_per_min: +(blob.size / 1048576 / (dur / 60000)).toFixed(1),
+            est_bitrate_mbps: +((blob.size * 8) / dur / 1000).toFixed(2),
+            chunk_count: arrivals.length,
+            stalls_over_3s: gaps.length,
+            longest_stall_ms: gaps.length ? Math.max(...gaps) : 0,
+            interruptions: events,
+            // 3.2 caps a capture at 750 MB. Projecting the observed rate to
+            // the 3-minute maximum says whether the cap is reachable at all.
+            projected_3min_mb: +(
+              ((blob.size / (dur / 60000)) * 3) /
+              1048576
+            ).toFixed(1),
+            playback_ok: null,
+          };
+          R.recording.within_750mb_at_3min =
+            R.recording.projected_3min_mb <= 750;
+
+          const url = URL.createObjectURL(blob);
+          const pb = $("playback");
+          pb.src = url;
+          // Reported support does not guarantee a decodable file. Asking the
+          // same browser to play its own output is the cheapest real check.
+          pb.onloadedmetadata = () => {
+            R.recording.playback_ok = true;
+            R.recording.playback_duration_s = isFinite(pb.duration)
+              ? +pb.duration.toFixed(1)
+              : null;
+            drawRec();
+          };
+          pb.onerror = () => {
+            R.recording.playback_ok = false;
+            drawRec();
+          };
+
+          drawRec();
+          $("rec").disabled = false;
+          $("stop").disabled = true;
+          $("upload").disabled = false;
+        };
+
+        recorder.start(1000);
+        $("rec").disabled = true;
+        $("stop").disabled = false;
+        ticker = setInterval(() => {
+          const e = performance.now() - started;
+          $("elapsed").textContent = clock(e);
+          if (e >= target && recorder.state === "recording") recorder.stop();
+        }, 250);
+      };
+
+      $("stop").onclick = () =>
+        recorder && recorder.state !== "inactive" && recorder.stop();
+
+      function drawRec() {
+        const r = R.recording;
+        table($("recstats"), [
+          ["Container", `<code>${r.actual_mime || "?"}</code>`],
+          [
+            "Duration",
+            `${clock(r.actual_ms)} of ${clock(r.target_ms)}`,
+            r.completed_full_duration ? "ok" : "bad",
+          ],
+          [
+            "Size",
+            `${fmtBytes(r.bytes)} (${r.mb_per_min} MB/min, ${r.est_bitrate_mbps} Mbps)`,
+          ],
+          [
+            "Projected at 3 min",
+            `${r.projected_3min_mb} MB vs 750 MB cap`,
+            r.within_750mb_at_3min ? "ok" : "bad",
+          ],
+          [
+            "Stalls > 3 s",
+            r.stalls_over_3s +
+              (r.longest_stall_ms ? ` (longest ${r.longest_stall_ms} ms)` : ""),
+            r.stalls_over_3s ? "bad" : "ok",
+          ],
+          ["Chunks", r.chunk_count],
+          [
+            "Plays back here",
+            r.playback_ok === null
+              ? "checking…"
+              : r.playback_ok
+                ? "yes"
+                : "NO — file is unusable",
+            r.playback_ok === false ? "bad" : r.playback_ok ? "ok" : "",
+          ],
+          [
+            "Interruptions",
+            r.interruptions.length
+              ? r.interruptions
+                  .map((e) => `${clock(e.at_ms)} ${e.event}`)
+                  .join("<br>")
+              : "none",
+            r.interruptions.length ? "warn" : "ok",
+          ],
+        ]);
+      }
+
+      /* ---------------- 5 · chunked upload ---------------- */
+
+      const PART = 8 * 1024 * 1024;
+      let dropped = false;
+
+      $("drop").onclick = () => {
+        dropped = true;
+        $("drop").disabled = true;
+      };
+
+      $("upload").onclick = async () => {
+        if (!blob) return;
+        const endpoint = $("endpoint").value.trim();
+        const parts = Math.ceil(blob.size / PART);
+        const log = [];
+        dropped = false;
+        $("drop").disabled = false;
+        $("upload").disabled = true;
+
+        const t0 = performance.now();
+        let sent = 0;
+        let resumed_from = null;
+
+        for (let i = 0; i < parts; i++) {
+          const slice = blob.slice(
+            i * PART,
+            Math.min((i + 1) * PART, blob.size),
+          );
+
+          // The drop is injected once, mid-flight, and then the same part is
+          // retried. That is the behaviour that has to work: resume from the
+          // failed part, not from the beginning.
+          if (dropped) {
+            log.push({ part: i + 1, result: "dropped, retrying" });
+            dropped = false;
+            resumed_from = i + 1;
+            await new Promise((r) => setTimeout(r, 600));
+          }
+
+          if (!endpoint) {
+            // Dry run: prove the browser can slice and read a 100+ MB blob
+            // without exhausting memory. That alone has failed on iOS before.
+            const buf = await slice.arrayBuffer();
+            log.push({
+              part: i + 1,
+              bytes: buf.byteLength,
+              result: "sliced (dry run)",
+            });
+            sent += buf.byteLength;
+          } else {
+            try {
+              const res = await fetch(
+                `${endpoint}${endpoint.includes("?") ? "&" : "?"}part=${i + 1}`,
+                {
+                  method: "PUT",
+                  body: slice,
+                },
+              );
+              log.push({
+                part: i + 1,
+                bytes: slice.size,
+                status: res.status,
+                result: res.ok ? "ok" : "http error",
+              });
+              if (res.ok) sent += slice.size;
+            } catch (e) {
+              log.push({
+                part: i + 1,
+                bytes: slice.size,
+                result: `failed: ${e.message}`,
+              });
+            }
+          }
+          table($("upstats"), [
+            ["Progress", `part ${i + 1} of ${parts} · ${fmtBytes(sent)}`],
+          ]);
+        }
+
+        const ms = performance.now() - t0;
+        R.upload = {
+          mode: endpoint ? "live" : "dry run (slicing only)",
+          endpoint: endpoint || null,
+          part_size_bytes: PART,
+          parts,
+          bytes_sent: sent,
+          elapsed_ms: Math.round(ms),
+          throughput_mbps: +((sent * 8) / ms / 1000).toFixed(2),
+          resumed_from_part: resumed_from,
+          all_parts_accounted_for: sent === blob.size,
+          log,
+        };
+        table($("upstats"), [
+          ["Mode", R.upload.mode],
+          ["Parts", `${parts} × ${fmtBytes(PART)}`],
+          [
+            "Sent",
+            `${fmtBytes(sent)} of ${fmtBytes(blob.size)}`,
+            R.upload.all_parts_accounted_for ? "ok" : "bad",
+          ],
+          [
+            "Elapsed",
+            `${Math.round(ms)} ms (${R.upload.throughput_mbps} Mbps)`,
+          ],
+          [
+            "Resume",
+            resumed_from
+              ? `recovered at part ${resumed_from}`
+              : "not exercised",
+            resumed_from ? "ok" : "warn",
+          ],
+        ]);
+        $("upload").disabled = false;
+        $("drop").disabled = true;
+      };
+
+      /* ---------------- 6 · motion sidecar ---------------- */
+
+      $("motion").onclick = async () => {
+        const out = {
+          device_motion_in_window: "DeviceMotionEvent" in window,
+          needs_permission:
+            typeof DeviceMotionEvent?.requestPermission === "function",
+          permission: null,
+          samples: 0,
+          has_gravity: null,
+          has_rotation_rate: null,
+          observed_hz: null,
+        };
+
+        if (out.needs_permission) {
+          // iOS only grants this from a user gesture, which is why it sits
+          // behind a button. 3.2 says the sidecar is optional, so a denial is
+          // a finding, not a failure.
+          try {
+            out.permission = await DeviceMotionEvent.requestPermission();
+          } catch (e) {
+            out.permission = `error: ${e.message}`;
+          }
+        } else {
+          out.permission = "not required";
+        }
+
+        if (out.permission === "granted" || out.permission === "not required") {
+          const t0 = performance.now();
+          const onMotion = (e) => {
+            out.samples++;
+            if (out.has_gravity === null) {
+              out.has_gravity = !!(
+                e.accelerationIncludingGravity &&
+                e.accelerationIncludingGravity.x !== null
+              );
+              out.has_rotation_rate = !!(
+                e.rotationRate && e.rotationRate.alpha !== null
+              );
+            }
+          };
+          window.addEventListener("devicemotion", onMotion);
+          await new Promise((r) => setTimeout(r, 2000));
+          window.removeEventListener("devicemotion", onMotion);
+          out.observed_hz = +(
+            out.samples /
+            ((performance.now() - t0) / 1000)
+          ).toFixed(1);
+        }
+
+        R.motion = out;
+        table($("motionstats"), [
+          [
+            "DeviceMotionEvent",
+            out.device_motion_in_window ? "present" : "missing",
+            out.device_motion_in_window ? "ok" : "bad",
+          ],
+          [
+            "Permission",
+            out.permission,
+            out.permission === "granted" || out.permission === "not required"
+              ? "ok"
+              : "warn",
+          ],
+          [
+            "Samples in 2 s",
+            `${out.samples} (${out.observed_hz ?? "?"} Hz)`,
+            (out.observed_hz ?? 0) >= 10 ? "ok" : "warn",
+          ],
+          [
+            "Gravity vector",
+            out.has_gravity === null ? "—" : out.has_gravity ? "yes" : "no",
+            out.has_gravity ? "ok" : "warn",
+          ],
+          [
+            "Rotation rate",
+            out.has_rotation_rate === null
+              ? "—"
+              : out.has_rotation_rate
+                ? "yes"
+                : "no",
+            out.has_rotation_rate ? "ok" : "warn",
+          ],
+        ]);
+      };
+
+      /* ---------------- 7 · export ---------------- */
+
+      $("export").onclick = () => {
+        $("out").textContent = JSON.stringify(R, null, 2);
+      };
+      $("copy").onclick = async () => {
+        const text = JSON.stringify(R, null, 2);
+        $("out").textContent = text;
+        try {
+          await navigator.clipboard.writeText(text);
+          $("copy").textContent = "Copied";
+          setTimeout(() => ($("copy").textContent = "Copy"), 1500);
+        } catch {
+          $("copy").textContent = "Select the JSON above";
+        }
+      };
+    </script>
+  </body>
+</html>

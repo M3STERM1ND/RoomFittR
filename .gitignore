@@ -25,8 +25,15 @@ __pycache__/
 # Eval artefacts: captures and pipeline runs are large and are not source.
 # The laser-measured ground truth IS source and stays tracked.
 eval/captures/
-eval/runs/
 eval/reports/
+
+# ...except the hand-built dummy run. It is small, it is the fixture the
+# harness's end-to-end test runs against, and it is the Phase 0 evidence that
+# the harness works before a pipeline exists. Untracked, none of that survives
+# a fresh clone. Note the contents are excluded rather than the directory
+# itself: git will not re-include a path inside an excluded directory.
+eval/runs/*
+!eval/runs/dummy/
 
 # Editor / OS
 .DS_Store

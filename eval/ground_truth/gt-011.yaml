@@ -1,0 +1,131 @@
+room_id: gt-011
+name: ARKitScenes 47331686
+room_type: office
+measured_on: '2026-09-17'
+measured_by: eval/adapters/arkitscenes.py
+instrument: ARKitScenes FARO laser depth, scene 47331686
+source:
+  tier: A
+  dataset: arkitscenes
+  scene_id: '47331686'
+  derived_by: eval/adapters/arkitscenes.py
+ceiling_height_mm: 2761
+floor_polygon_mm:
+- - -2227
+  - 386
+- - -1328
+  - 434
+- - -1142
+  - -176
+- - -825
+  - -176
+- - -378
+  - -1516
+- - 1086
+  - -1617
+- - 1186
+  - -1317
+- - 1572
+  - -1316
+- - 2272
+  - 934
+- - 2072
+  - 1084
+- - 1824
+  - 1151
+- - 1772
+  - 584
+- - 1322
+  - -66
+- - 1117
+  - -766
+- - 522
+  - -766
+- - -378
+  - -261
+- - -378
+  - 299
+- - 136
+  - 1429
+- - -607
+  - 1429
+- - -1478
+  - 1784
+- - -1567
+  - 1090
+- - -2077
+  - 1039
+walls:
+- id: W1
+  length_mm: 900
+- id: W2
+  length_mm: 638
+- id: W3
+  length_mm: 317
+- id: W4
+  length_mm: 1413
+- id: W5
+  length_mm: 1467
+- id: W6
+  length_mm: 316
+- id: W7
+  length_mm: 386
+- id: W8
+  length_mm: 2356
+- id: W9
+  length_mm: 250
+- id: W10
+  length_mm: 257
+- id: W11
+  length_mm: 569
+- id: W12
+  length_mm: 791
+- id: W13
+  length_mm: 729
+- id: W14
+  length_mm: 595
+- id: W15
+  length_mm: 1032
+- id: W16
+  length_mm: 560
+- id: W17
+  length_mm: 1241
+- id: W18
+  length_mm: 743
+- id: W19
+  length_mm: 941
+- id: W20
+  length_mm: 700
+- id: W21
+  length_mm: 513
+- id: W22
+  length_mm: 670
+openings: []
+captures:
+- capture_id: gt-011-a
+  device: iPad Pro (ARKitScenes capture)
+  style: careful
+  file: captures/gt-tmp-a.mov
+  note: copy or symlink from D:/arkitscenes/raw/Training/47331686/47331686.mov
+notes: 'Tier A ground truth: derived from ARKitScenes'' FARO laser depth, not measured
+  by hand. openings is empty on purpose -- ARKitScenes annotates 17 furniture classes
+  and no doors or windows, so E5 is decided on Tier B (3.10). Spot-check the floor
+  polygon against the capture before trusting E4 on it.'
+traits:
+- sparse
+furniture:
+- label: cabinet
+  footprint_mm:
+  - 1143
+  - 802
+  height_mm: 526
+- label: table
+  footprint_mm:
+  - 631
+  - 448
+  height_mm: 366
+- label: table
+  footprint_mm:
+  - 611
+  - 388
+  height_mm: 359

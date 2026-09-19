@@ -36,8 +36,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <noscript>
           <style
             dangerouslySetInnerHTML={{
-              __html:
-                ".reveal{opacity:1!important;transform:none!important}",
+              __html: ".reveal{opacity:1!important;transform:none!important}",
             }}
           />
         </noscript>

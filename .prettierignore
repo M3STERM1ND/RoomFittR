@@ -3,3 +3,18 @@ pnpm-lock.yaml
 node_modules/
 **/generated/
 *.md
+uv.lock
+
+# Vendored skill data. Not ours to reformat.
+.claude/
+
+# Written by fixtures/rooms/_build.py with json.dumps(indent=2). Prettier
+# collapses the short coordinate pairs, so formatting these would make the
+# builder and the formatter overwrite each other forever. _build.py is the
+# formatter for this directory.
+fixtures/rooms/*.json
+
+# Simulated pipeline output. These stand in for what the reconstruction
+# pipeline emits, so they are kept in the pipeline's own formatting rather
+# than the repo's.
+eval/runs/

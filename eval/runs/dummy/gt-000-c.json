@@ -1,0 +1,126 @@
+{
+  "schema_version": 0,
+  "pipeline_version": "0.0.0",
+  "units": "mm",
+  "up": "+Y",
+  "floor_polygon": [
+    [
+      -2516,
+      -2079
+    ],
+    [
+      2516,
+      -2079
+    ],
+    [
+      2516,
+      2079
+    ],
+    [
+      -2516,
+      2079
+    ]
+  ],
+  "ceiling_height_mm": 2954,
+  "ceiling_observed": true,
+  "walls": [
+    {
+      "id": "W1",
+      "start": [
+        -2516,
+        -2079
+      ],
+      "end": [
+        2516,
+        -2079
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 5032
+    },
+    {
+      "id": "W2",
+      "start": [
+        2516,
+        -2079
+      ],
+      "end": [
+        2516,
+        2079
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 4157
+    },
+    {
+      "id": "W3",
+      "start": [
+        2516,
+        2079
+      ],
+      "end": [
+        -2516,
+        2079
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 5032
+    },
+    {
+      "id": "W4",
+      "start": [
+        -2516,
+        2079
+      ],
+      "end": [
+        -2516,
+        -2079
+      ],
+      "thickness_mm": 100,
+      "kind": "solid",
+      "length_mm": 4157
+    }
+  ],
+  "openings": [
+    {
+      "id": "O1",
+      "wall_id": "W3",
+      "type": "door",
+      "offset_mm": 1510,
+      "width_mm": 830,
+      "sill_mm": 0,
+      "height_mm": 2040,
+      "swing": "unknown",
+      "confidence": 0.9
+    }
+  ],
+  "fixed_obstacles": [],
+  "appearance": {
+    "floor": {
+      "color": "#efecea",
+      "material": "oak"
+    },
+    "ceiling": {
+      "color": "#f6f9fc",
+      "material": "paint"
+    },
+    "tier": 0
+  },
+  "scale": {
+    "factor": 1.0,
+    "sources": [
+      {
+        "name": "fixture",
+        "factor": 1.0,
+        "weight": 1.0
+      }
+    ],
+    "confidence": "high",
+    "user_calibrated": true
+  },
+  "quality": {
+    "coverage_pct": 96.0,
+    "frames_used": 112,
+    "warnings": []
+  }
+}

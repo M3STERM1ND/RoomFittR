@@ -20,7 +20,9 @@
     "quality"
   ],
   "properties": {
-    "schema_version": { "$ref": "common.schema.json#/definitions/schema_version" },
+    "schema_version": {
+      "$ref": "common.schema.json#/definitions/schema_version"
+    },
     "pipeline_version": { "$ref": "common.schema.json#/definitions/semver" },
     "units": { "const": "mm" },
     "up": { "const": "+Y" },
@@ -99,7 +101,9 @@
             "description": "V1 usually cannot infer this. When unknown the validator keeps out both sides (5.5 H4).",
             "enum": ["left", "right", "unknown"]
           },
-          "confidence": { "$ref": "common.schema.json#/definitions/unit_interval" }
+          "confidence": {
+            "$ref": "common.schema.json#/definitions/unit_interval"
+          }
         }
       }
     },
@@ -133,10 +137,16 @@
       "properties": {
         "walls": {
           "type": "object",
-          "additionalProperties": { "$ref": "common.schema.json#/definitions/surface_appearance" }
+          "additionalProperties": {
+            "$ref": "common.schema.json#/definitions/surface_appearance"
+          }
         },
-        "floor": { "$ref": "common.schema.json#/definitions/surface_appearance" },
-        "ceiling": { "$ref": "common.schema.json#/definitions/surface_appearance" },
+        "floor": {
+          "$ref": "common.schema.json#/definitions/surface_appearance"
+        },
+        "ceiling": {
+          "$ref": "common.schema.json#/definitions/surface_appearance"
+        },
         "tier": { "enum": [0, 1] }
       }
     },
@@ -157,7 +167,9 @@
             "properties": {
               "name": { "type": "string", "minLength": 1 },
               "factor": { "type": "number", "exclusiveMinimum": 0 },
-              "weight": { "$ref": "common.schema.json#/definitions/unit_interval" }
+              "weight": {
+                "$ref": "common.schema.json#/definitions/unit_interval"
+              }
             }
           }
         },

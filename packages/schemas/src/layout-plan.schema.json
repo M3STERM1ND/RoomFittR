@@ -7,7 +7,9 @@
   "additionalProperties": false,
   "required": ["schema_version", "room_type", "slots"],
   "properties": {
-    "schema_version": { "$ref": "common.schema.json#/definitions/schema_version" },
+    "schema_version": {
+      "$ref": "common.schema.json#/definitions/schema_version"
+    },
 
     "room_type": {
       "type": "string",

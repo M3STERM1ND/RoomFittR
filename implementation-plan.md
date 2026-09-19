@@ -448,15 +448,60 @@ These numbers are why the UX is "upload and come back" (Masterplan §9), with a 
 
 ### 3.10 Phase 1 Experiments (Must Pass Before Building the Product)
 
-**Evaluation dataset (built in Phase 0):**
-- **12–15 real rooms** across both our homes, family, and friends: living rooms, bedrooms, a home office, a small kitchen/dining area, one open-plan space, one cluttered room, one sparse white-walled room.
-- Each room captured **3 times** (two phones, iPhone and Android; one capture deliberately "sloppy": faster pans, portrait).
-- **Ground truth** per room, measured with a laser measure:
-  - Every wall length and the ceiling height.
-  - Width/height/sill of every door and window, with the wall each is on.
-  - Footprint and height of 3 furniture pieces.
-  - A hand-drawn floor plan photo.
-- **Supplementary benchmark:** ScanNet++ and/or ARKitScenes sequences for pose/geometry sanity. Evaluation use only, subject to their dataset terms **[VERIFY]**.
+**Evaluation dataset (built in Phase 0).** Revised 2026-09-17: the original plan called
+for 12–15 self-captured rooms with laser-measured ground truth. That costs a laser measure,
+several weekends, and access to other people's homes — all spent *before* knowing whether the
+pipeline works at all. The gate needs a yardstick, not specifically **our** yardstick, so
+Phase 0 now uses public ground truth and defers self-capture to a post-gate reality check.
+
+**Tier A — primary yardstick (Phase 0, free).** **ARKitScenes** (Apple). Chosen after
+ScanNet++, ZInD and Matterport3D all turned out to gate access behind academic credentials
+or an institutional email, which we do not have. ARKitScenes is a **direct download script
+with no account, no application and no affiliation check**, and it is the only open option
+that pairs *real* commodity captures with laser ground truth:
+
+- `highres_depth` — ground-truth depth projected from a **FARO laser scanner** mesh, 1920×1440,
+  uint16 millimetres. This is the metric yardstick.
+- `lowres_wide.traj` — gravity-aligned ARKit camera poses (axis-angle + metres).
+- `mov` — the RGB capture itself, which is pipeline input.
+- `annotation` — oriented bounding boxes over 17 furniture classes, which gives **E6** ground
+  truth for free.
+
+Target **12–15 scenes**, picked for the trait spread of the original roster. Layout is
+derived by `eval/adapters/arkitscenes.py`: back-project the laser depth through the poses
+into a room-scoped point cloud, split floor and ceiling by height histogram, trace the floor
+outline.
+
+- Access: free, open, no application. Apple's licence is dual: non-commercial by default,
+  **with commercial use granted below a 700M-MAU threshold** — more permissive than any
+  academic dataset we looked at. Recorded in `docs/model-licenses.md` §4b.
+- **What it does not have: door and window annotations.** Its taxonomy is 17 furniture
+  classes and contains no `door` or `window`, so **E5 has no Tier A ground truth** and moves
+  to Tier B with E2, E3 and E8. That is a cheap move: doors and windows are the easiest
+  thing in a room to measure with a tape.
+
+**How circular is this?** Less than it looks, but not zero, and worth stating plainly. The
+adapter's input is dense, complete, metric and already gravity-aligned; S6's input is a
+sparse, noisy, scale-ambiguous reconstruction from phone video. They share no code. But
+unlike ScanNet++ — where floor and ceiling came from *human* semantic labels — here the
+floor is found geometrically, which is the same *class* of operation S6 performs. So Tier A
+measures S6's end-to-end error against a far better instrument, not against an independent
+oracle. Tier B, measured by hand, is the independent check.
+
+**Tier B — reality check (deferred until after the Phase 1 gate).** **3–5 self-captured
+rooms**, our own homes only, measured with whatever is to hand (tape measure or a phone
+measuring app; a laser measure is a nice-to-have, not a prerequisite). Each captured 3× where
+two phones are available, including one deliberately "sloppy" capture (faster pans, portrait).
+This is what E2, E3 and E8 ultimately need, because Tier A was not captured by a user
+following our capture coach. Running it *after* the gate means it is only paid for if the
+pipeline has already proven itself on Tier A.
+
+**Consequence for the experiments below.** E1, E4, E6 and E7 are answered on Tier A.
+**E2, E3, E5 and E8 are decided on Tier B**: scale and capture robustness depend on how the
+video was shot, and openings have no Tier A annotation at all. The Phase 1 gate is therefore
+reached in two steps — an E1/E4/E6/E7 verdict on public data, then an E2/E3/E5/E8 verdict
+once Tier B exists. **Tier B grows from 3–5 rooms to 5–8** to carry E5's opening statistics;
+it is still our own homes and still needs no laser measure.
 
 **Experiments:**
 
@@ -1060,17 +1105,35 @@ Prod:   [P0][==P3 Catalog Pipeline==][===P4 Layout Engine===][==P6 Web App===]
 - Create the monorepo skeleton (pnpm + uv), lint/format/typecheck, GitHub Actions CI.
 - Write `packages/schemas`: `RoomModel`, `ObjectsFile`, `LayoutPlan`, `ValidationReport` v0 + TS/Pydantic codegen + CI staleness check.
 - Hand-author **6 fixture RoomModels** from real ground-truth measurements (rectangular, L-shaped, small bedroom, open boundary, many openings, narrow). These unblock Track Product.
-- Capture the **evaluation dataset** (§3.10): 12–15 rooms × 3 captures, laser-measured ground truth in `eval/ground_truth/*.yaml`.
+- Assemble the **Tier A evaluation dataset** (§3.10): 12–15 **ARKitScenes** scenes converted
+  to `eval/ground_truth/*.yaml` by `eval/adapters/arkitscenes.py`. Free, open download, no
+  application, no measuring, no self-capture.
 - Build the `eval/` harness: run pipeline → compare against ground truth → metrics table (CSV + markdown report).
-- Set up Modal account/workspace, R2 buckets (dev/prod), Supabase projects (dev/prod), Sentry.
-- Complete the license verification table (§1.2).
-- **E9 browser recording spike:** a throwaway HTML page testing MediaRecorder on target phones.
+- Complete the license verification table (§1.2) in `docs/model-licenses.md`, **including the
+  terms of any public dataset used** — they are evaluation-only and must be recorded like a
+  non-commercial checkpoint.
+- **E9 browser recording spike:** a throwaway HTML page testing MediaRecorder, run on whatever
+  target devices are actually to hand. iOS Safari is the deciding case.
+
+**Moved out of Phase 0** (revised 2026-09-17):
+- **Infrastructure accounts** (Modal workspace, R2 dev/prod buckets, Supabase dev/prod
+  projects, Sentry) → **start of Phase 1**, which is the first thing that reads them. The
+  runbook is written and waiting in `docs/infrastructure-setup.md`, so this is an hour of
+  signups on the day, not a research task. The one exception is **requesting Hugging Face
+  access to the gated checkpoints** (`facebook/VGGT-1B-Commercial`, `facebook/sam3`), which is
+  free, has approval latency, and should be clicked during Phase 0.
+- **Tier B self-capture** (5–8 of our own rooms) → **after the Phase 1 gate**, per §3.10.
+  It now carries E5 as well as E2, E3 and E8, because ARKitScenes has no opening
+  annotations.
 
 **Dependencies:** None.
 
-**Tests:** Schema round-trip tests (TS ↔ Python ↔ JSON); ground-truth file validation.
+**Tests:** Schema round-trip tests (TS ↔ Python ↔ JSON); ground-truth file validation; adapter
+conversion tests; the eval harness end-to-end on the committed dummy run.
 
-**Definition of done:** Dataset captured and measured; eval harness runs end to end on a dummy result; fixtures committed; license table filled; E9 findings written up.
+**Definition of done:** 12–15 Tier A ground-truth files committed and passing validation; eval
+harness runs end to end on a dummy result; fixtures committed; license table filled (models +
+dataset terms); E9 findings written up with at least one real device measured.
 
 ---
 
@@ -1091,7 +1154,7 @@ Prod:   [P0][==P3 Catalog Pipeline==][===P4 Layout Engine===][==P6 Web App===]
 10. **Debug viewer:** a single static page (three.js) showing point cloud + fitted RoomModel + shell side by side, loaded from R2.
 11. Run the full bake-off E1–E8 on the whole dataset; write `eval/reports/phase1.md` with the chosen model, metrics, failure cases, and the go/no-go call.
 
-**Dependencies:** Phase 0 dataset + harness + license table.
+**Dependencies:** Phase 0 Tier A dataset + harness + license table. **Phase 1 opens by doing the infrastructure setup moved out of Phase 0** (`docs/infrastructure-setup.md`): Modal workspace, R2 buckets and Sentry are needed before the first GPU run; Supabase is not needed until Phase 5.
 
 **Tests**
 - Unit: frame scoring, keyframe selection determinism, alignment on synthetic point clouds (known rotation recovered within 1°), polygon extraction on synthetic density maps (rect, L, with furniture blobs against walls), opening rectangle fitting, scale fusion math.
@@ -1340,7 +1403,12 @@ Prod:   [P0][==P3 Catalog Pipeline==][===P4 Layout Engine===][==P6 Web App===]
 | D13 | **V1 room corrections scope:** can users add/move/delete doors and windows, or only calibrate scale and keep/remove objects? | Depends on E5 opening-detection accuracy; editing openings adds UI scope | E5 results: if door recall < 85%, a minimal opening editor becomes required | End of Phase 1 |
 | D14 | **Original-room photoreal view** (Gaussian splat "before" view using gsplat + a web splat renderer) | Nice-to-have that adds GPU time, storage, and mobile performance risk | Revisit after beta feedback | Post-beta |
 | D15 | **Local GPU for development** | Unknown whether either of us has a ≥ 24 GB NVIDIA GPU; affects iteration speed vs. Modal dev spend | Inventory hardware in Phase 0; otherwise budget Modal dev credits | Phase 0 |
+| D17 | **Apple RoomPlan as the capture path** — **CLOSED 2026-09-17: rejected.** RoomPlan outputs walls, dimensions, openings and furniture parametrically, which is essentially a finished `RoomModel`, and would remove the Phase 1 gate entirely. Rejected on two grounds. (1) **Product:** it is native Swift, iOS-only, and requires a LiDAR device (iPhone 12 Pro or later Pro, iPad Pro) — it cannot run in a browser at all, which contradicts masterplan.md line 28 ("directly through the web app, usable on both desktop and mobile browsers") and would cut the audience to recent iPhone Pro owners. (2) **Practical:** we have neither a Mac nor a LiDAR device, so it is not even buildable here. | — | — | Closed |
 | D16 | **Open-plan / multi-room support** | Scope depends on how common it is among testers and how badly `open` segments perform | Beta usage data | Post-beta |
+
+---
+
+**On D17, for the record.** The interesting variant considered was not "ship RoomPlan" but "use RoomPlan to de-risk": build the downstream product (catalog, layout engine, 3D editor) against RoomPlan's near-perfect room output, prove people want *that*, and treat video→3D as the thing that later widens the audience. It inverts the plan's risk ordering in a defensible way. It is closed only because of the hardware, so if a Mac and a LiDAR device ever appear, this is worth reopening before committing another six weeks to reconstruction.
 
 ---
 

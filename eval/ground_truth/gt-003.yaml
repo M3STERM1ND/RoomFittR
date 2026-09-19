@@ -1,0 +1,111 @@
+room_id: gt-003
+name: ARKitScenes 41048229
+room_type: kitchen_dining
+measured_on: '2026-09-17'
+measured_by: eval/adapters/arkitscenes.py
+instrument: ARKitScenes FARO laser depth, scene 41048229
+source:
+  tier: A
+  dataset: arkitscenes
+  scene_id: '41048229'
+  derived_by: eval/adapters/arkitscenes.py
+ceiling_height_mm: 2629
+floor_polygon_mm:
+- - -1612
+  - -792
+- - -862
+  - -842
+- - -662
+  - -1142
+- - -212
+  - -1142
+- - 160
+  - -1293
+- - 415
+  - -988
+- - 1838
+  - -842
+- - 1797
+  - 314
+- - 1658
+  - 591
+- - 1606
+  - 1163
+- - 788
+  - 1108
+- - 638
+  - 656
+- - 38
+  - 656
+- - 38
+  - 936
+- - -1094
+  - 838
+- - -1094
+  - 1094
+- - -1914
+  - 1145
+walls:
+- id: W1
+  length_mm: 752
+- id: W2
+  length_mm: 361
+- id: W3
+  length_mm: 450
+- id: W4
+  length_mm: 401
+- id: W5
+  length_mm: 398
+- id: W6
+  length_mm: 1430
+- id: W7
+  length_mm: 1157
+- id: W8
+  length_mm: 310
+- id: W9
+  length_mm: 574
+- id: W10
+  length_mm: 820
+- id: W11
+  length_mm: 476
+- id: W12
+  length_mm: 600
+- id: W13
+  length_mm: 280
+- id: W14
+  length_mm: 1136
+- id: W15
+  length_mm: 256
+- id: W16
+  length_mm: 822
+- id: W17
+  length_mm: 1960
+openings: []
+captures:
+- capture_id: gt-003-a
+  device: iPad Pro (ARKitScenes capture)
+  style: careful
+  file: captures/gt-tmp-a.mov
+  note: copy or symlink from D:/arkitscenes/raw/Training/41048229/41048229.mov
+notes: 'Tier A ground truth: derived from ARKitScenes'' FARO laser depth, not measured
+  by hand. openings is empty on purpose -- ARKitScenes annotates 17 furniture classes
+  and no doors or windows, so E5 is decided on Tier B (3.10). Spot-check the floor
+  polygon against the capture before trusting E4 on it.'
+traits:
+- cluttered
+furniture:
+- label: cabinet
+  footprint_mm:
+  - 1956
+  - 1057
+  height_mm: 594
+- label: cabinet
+  footprint_mm:
+  - 1894
+  - 655
+  height_mm: 345
+- label: table
+  footprint_mm:
+  - 1233
+  - 745
+  height_mm: 722
