@@ -6,6 +6,34 @@
       "sourceType": "github",
       "skillPath": ".claude/skills/ui-ux-pro-max/SKILL.md",
       "computedHash": "3f1e66e08e3d1d3feaf2a3187705022812e0bece8ff5bee80fe7cf782f26fe8b"
+    },
+    "webapp-testing": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "sourcePath": "skills/webapp-testing",
+      "skillPath": ".claude/skills/webapp-testing/SKILL.md",
+      "computedHash": "51b7349e77ec63b7744a6f63647e7566a0b4d2e301121cc10e8c2113af6556a2"
+    },
+    "computer-vision-opencv": {
+      "source": "Mindrally/skills",
+      "sourceType": "github",
+      "sourcePath": "computer-vision-opencv",
+      "skillPath": ".claude/skills/computer-vision-opencv/SKILL.md",
+      "computedHash": "764b534f62ed1ce1572150f54ac42777f609d698d988e806eb478e251d8dbff5"
+    },
+    "threejs-webgl": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "sourcePath": "plugins/individual/threejs-webgl/skills/threejs-webgl",
+      "skillPath": ".claude/skills/threejs-webgl/SKILL.md",
+      "computedHash": "2fb912c851db124e212afdd2e80b5213f756ca62af6e2eb50de320f6f8ba4f9e"
+    },
+    "react-three-fiber": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "sourcePath": "plugins/individual/react-three-fiber/skills/react-three-fiber",
+      "skillPath": ".claude/skills/react-three-fiber/SKILL.md",
+      "computedHash": "f9747e9e93bf939a1eff4a1c845146f38d8f9e06655be58653a9f95f36c342cc"
     }
   }
 }
