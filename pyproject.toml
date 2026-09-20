@@ -26,6 +26,7 @@ dev = [
     "types-shapely>=2.1.0.20260728",
     "playwright>=1.63.0",
     "static-ffmpeg>=3.0",
+    "scipy-stubs>=1.18.1.0",
 ]
 
 [tool.uv]
