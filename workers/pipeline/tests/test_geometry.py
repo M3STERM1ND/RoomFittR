@@ -501,7 +501,7 @@ class TestSanityChecks:
         return geometry.RoomGeometry(**base)  # type: ignore[arg-type]
 
     def test_a_good_room_passes_with_only_a_missing_door_warning(self) -> None:
-        assert geometry.sanity_check(self._geometry()) == ["no_door_found"]
+        assert geometry.sanity_check(self._geometry()) == [geometry.WARN_DOOR_POSSIBLY_MISSED]
 
     def test_an_implausibly_small_room_is_rejected(self) -> None:
         tiny = self._geometry(polygon=Polygon([(0, 0), (900, 0), (900, 900), (0, 900)]))
@@ -525,7 +525,7 @@ class TestSanityChecks:
         estimated = self._geometry(
             profile=geometry.HeightProfile(floor_mm=0.0, ceiling_mm=2400.0, ceiling_observed=False)
         )
-        assert "ceiling_estimated" in geometry.sanity_check(estimated)
+        assert geometry.WARN_CEILING_NOT_OBSERVED in geometry.sanity_check(estimated)
 
     def test_overlapping_doors_are_rejected(self) -> None:
         overlapping = self._geometry(
@@ -551,4 +551,4 @@ class TestSanityChecks:
             geometry.WallSegment(walls[0].id, walls[0].start, walls[0].end, "open", 0.1),
             *walls[1:],
         ]
-        assert "open_boundary" in geometry.sanity_check(self._geometry(walls=opened))
+        assert geometry.WARN_OPEN_BOUNDARY in geometry.sanity_check(self._geometry(walls=opened))

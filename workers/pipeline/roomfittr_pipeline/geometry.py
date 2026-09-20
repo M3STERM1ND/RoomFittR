@@ -105,17 +105,39 @@ DOOR_HEIGHT_RANGE_MM = (1900, 2400)
 MAX_DOOR_SILL_MM = 150
 
 
+# Warning codes, from the closed `warning_code` enum in common.schema.json.
+# Named here rather than spelled at each raise site so a typo is an
+# AttributeError at import instead of a schema violation at publish.
+WARN_CEILING_NOT_OBSERVED = "CEILING_NOT_OBSERVED"
+WARN_OPEN_BOUNDARY = "OPEN_BOUNDARY_PRESENT"
+WARN_DOOR_POSSIBLY_MISSED = "DOOR_POSSIBLY_MISSED"
+WARN_DOOR_SWING_UNKNOWN = "DOOR_SWING_UNKNOWN"
+
+
 @dataclass(frozen=True, slots=True)
 class HeightProfile:
-    """Where the floor and ceiling sit, measured along +Y."""
+    """Where the floor and ceiling sit, measured along +Y.
+
+    In the units the geometry arrived in. S6's thresholds are metric, so in
+    practice S5 has applied a provisional metric scale and those units are
+    approximately millimetres -- but `height` stays a float, because S7's
+    correction is applied later and rounding here would quantise the ceiling
+    to whole units before it is refined.
+    """
 
     floor_mm: float
     ceiling_mm: float
     ceiling_observed: bool
 
     @property
+    def height(self) -> float:
+        """Floor-to-ceiling, unrounded, in the input's units."""
+        return self.ceiling_mm - self.floor_mm
+
+    @property
     def height_mm(self) -> int:
-        return int(round(self.ceiling_mm - self.floor_mm))
+        """The same, rounded, for the sanity checks and denormalised columns."""
+        return int(round(self.height))
 
 
 def height_profile(structure_points: Points) -> HeightProfile:
@@ -715,7 +737,7 @@ def sanity_check(geometry: RoomGeometry) -> list[str]:
         )
 
     if not geometry.profile.ceiling_observed:
-        warnings.append("ceiling_estimated")
+        warnings.append(WARN_CEILING_NOT_OBSERVED)
 
     by_id = {wall.id: wall for wall in geometry.walls}
     for opening in geometry.openings:
@@ -733,7 +755,11 @@ def sanity_check(geometry: RoomGeometry) -> list[str]:
                 f"{opening.id} extends past the end of {wall.id}",
             )
         if opening.sill_mm + opening.height_mm > height:
-            warnings.append("opening_taller_than_ceiling")
+            # An opening that runs past the ceiling means the ceiling is
+            # wrong, not the opening: a door is a better-measured thing than
+            # a ceiling a phone camera barely saw. Reported as a ceiling
+            # caveat, which is what a reader needs to act on.
+            warnings.append(WARN_CEILING_NOT_OBSERVED)
 
     doors = [o for o in geometry.openings if o.type == "door"]
     for first, second in zip(doors, doors[1:], strict=False):
@@ -745,7 +771,12 @@ def sanity_check(geometry: RoomGeometry) -> list[str]:
             )
 
     if not doors:
-        warnings.append("no_door_found")
+        warnings.append(WARN_DOOR_POSSIBLY_MISSED)
+    if any(opening.swing == "unknown" for opening in geometry.openings if opening.type == "door"):
+        # 3.6: V1 leaves swing unknown, and the validator keeps both sides
+        # clear as a result (5.5 H4). The user should know why their doorway
+        # has a larger keep-out than they expected.
+        warnings.append(WARN_DOOR_SWING_UNKNOWN)
 
     perimeter = sum(wall.length_mm for wall in geometry.walls)
     open_length = sum(wall.length_mm for wall in geometry.walls if wall.kind == "open")
@@ -760,7 +791,7 @@ def sanity_check(geometry: RoomGeometry) -> list[str]:
             f"{open_length / perimeter:.0%} of the boundary has no wall behind it",
         )
     if open_length > 0:
-        warnings.append("open_boundary")
+        warnings.append(WARN_OPEN_BOUNDARY)
 
     return warnings
 
