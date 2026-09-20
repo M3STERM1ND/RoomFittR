@@ -14,6 +14,8 @@ from typing import Any
 
 import jsonschema
 import pytest
+from referencing import Registry, Resource
+from referencing.jsonschema import DRAFT7
 from roomfittr_pipeline import geometry, roommodel, scale, shell
 from roomfittr_pipeline.geometry import HeightProfile, Opening, RoomGeometry, WallSegment
 from shapely.geometry import Polygon
@@ -21,20 +23,28 @@ from shapely.geometry import Polygon
 SCHEMA_DIR = Path(__file__).resolve().parents[3] / "packages" / "schemas" / "src"
 
 
-@pytest.fixture(scope="module")
-def validator() -> jsonschema.protocols.Validator:
-    """A validator that can resolve the schemas' cross-references."""
-    store = {}
+def _schema_registry() -> Registry:
+    """A registry that can resolve the schemas' cross-file `$ref`s.
+
+    `RefResolver` is the obvious API and is deprecated; `referencing` is what
+    jsonschema 4.18+ uses underneath. Worth using directly rather than
+    carrying a DeprecationWarning through every test run.
+    """
+    resources = []
     for path in SCHEMA_DIR.glob("*.schema.json"):
         document = json.loads(path.read_text(encoding="utf-8"))
-        store[path.name] = document
-        store[document["$id"]] = document
+        resource = Resource.from_contents(document, default_specification=DRAFT7)
+        # Registered under both the filename and the $id, because the schemas
+        # reference each other by relative filename.
+        resources.append((path.name, resource))
+        resources.append((document["$id"], resource))
+    return Registry().with_resources(resources)
 
-    room_model = store["room-model.schema.json"]
-    registry_resolver = jsonschema.RefResolver(
-        base_uri=room_model["$id"], referrer=room_model, store=store
-    )
-    return jsonschema.Draft7Validator(room_model, resolver=registry_resolver)
+
+@pytest.fixture(scope="module")
+def validator() -> jsonschema.protocols.Validator:
+    schema = json.loads((SCHEMA_DIR / "room-model.schema.json").read_text(encoding="utf-8"))
+    return jsonschema.Draft7Validator(schema, registry=_schema_registry())
 
 
 def room(

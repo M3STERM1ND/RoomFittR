@@ -1,0 +1,167 @@
+# Category placement rules (implementation-plan.md 5.3).
+#
+# A config file, not LLM output and not code. 5.3 is explicit about that: the
+# LLM chooses categories and spatial intents, and these rules are what the
+# deterministic solver and validator use to turn an intent into coordinates
+# and to judge the result. Keeping them here means they can be reviewed and
+# changed by a person who is not reading Python, and versioned alongside the
+# layouts they produced.
+#
+# Fields:
+#   placement            against_wall_preferred | headboard_to_wall | float_allowed
+#   layer                floor | floor_covering  (floor coverings can be under things)
+#   back_to_wall_gap_mm  [min, max] gap between the item's back and the wall
+#   front_clearance_mm   clear space in front, used by S2 and the solver
+#   side_clearance_mm    clear space at each side
+#   faces                focal | room | none  -- what the front should point at
+#   relation             how this category relates to an anchor (5.3)
+#
+# The vocabulary is the closed list from 4.2. A category missing from here
+# still works: `CategoryRule()` supplies neutral defaults, and the validator
+# simply has less to say about it.
+
+sofa:
+  placement: against_wall_preferred
+  back_to_wall_gap_mm: [0, 150]
+  front_clearance_mm: 450
+  side_clearance_mm: 0
+  faces: focal
+
+sectional:
+  placement: against_wall_preferred
+  back_to_wall_gap_mm: [0, 150]
+  front_clearance_mm: 450
+  side_clearance_mm: 0
+  faces: focal
+
+loveseat:
+  placement: against_wall_preferred
+  back_to_wall_gap_mm: [0, 150]
+  front_clearance_mm: 450
+  faces: focal
+
+armchair:
+  placement: float_allowed
+  front_clearance_mm: 450
+  faces: focal
+
+accent_chair:
+  placement: float_allowed
+  front_clearance_mm: 400
+  faces: focal
+
+# 5.3's worked example. The gap band is a comfort range: closer than 350 mm
+# and you cannot get past, further than 500 mm and you cannot reach your cup.
+coffee_table:
+  placement: float_allowed
+  relation: in_front_of
+  anchor_categories: [sofa, sectional, loveseat]
+  gap_mm: [350, 500]
+  center_aligned: true
+  size_ratio_to_anchor_width: [0.45, 0.75]
+  front_clearance_mm: 350
+
+side_table:
+  placement: float_allowed
+  relation: beside
+  anchor_categories: [sofa, sectional, loveseat, armchair]
+  gap_mm: [0, 200]
+  front_clearance_mm: 300
+
+console_table:
+  placement: against_wall_preferred
+  back_to_wall_gap_mm: [0, 50]
+  front_clearance_mm: 600
+
+tv_stand:
+  placement: against_wall_preferred
+  back_to_wall_gap_mm: [0, 100]
+  front_clearance_mm: 600
+  faces: room
+
+bookshelf:
+  placement: against_wall_preferred
+  back_to_wall_gap_mm: [0, 50]
+  front_clearance_mm: 900 # you need to stand back to read the spines
+  faces: room
+
+bed_frame:
+  placement: headboard_to_wall
+  back_to_wall_gap_mm: [0, 50]
+  # 5.3: both sides for queen and up, one side for twin and full. The solver
+  # reads `side_access_both_above_width_mm` to decide which applies.
+  side_clearance_mm: 600
+  side_access_both_above_width_mm: 1400
+  front_clearance_mm: 900 # foot of the bed
+  faces: room
+
+nightstand:
+  placement: against_wall_preferred
+  relation: beside
+  anchor_categories: [bed_frame]
+  gap_mm: [0, 250]
+  back_to_wall_gap_mm: [0, 50]
+  front_clearance_mm: 300
+
+dresser:
+  placement: against_wall_preferred
+  back_to_wall_gap_mm: [0, 50]
+  front_clearance_mm: 900 # drawers have to open
+  faces: room
+
+desk:
+  placement: against_wall_preferred
+  back_to_wall_gap_mm: [0, 100]
+  front_clearance_mm: 900 # a chair has to pull back
+  faces: room
+
+office_chair:
+  placement: float_allowed
+  relation: at
+  anchor_categories: [desk]
+  gap_mm: [0, 300]
+  front_clearance_mm: 300
+
+dining_table:
+  placement: float_allowed
+  front_clearance_mm: 900
+  side_clearance_mm: 900 # chairs pull back on every side
+
+dining_chair:
+  placement: float_allowed
+  relation: around
+  anchor_categories: [dining_table]
+  pullback_mm: 900
+  front_clearance_mm: 0
+
+rug:
+  layer: floor_covering
+  placement: float_allowed
+  relation: under
+  anchor_categories: [sofa, sectional, coffee_table, bed_frame, dining_table]
+  front_clearance_mm: 0
+
+floor_lamp:
+  placement: float_allowed
+  relation: beside
+  anchor_categories: [sofa, armchair, loveseat]
+  gap_mm: [0, 300]
+  front_clearance_mm: 0
+
+bench:
+  placement: against_wall_preferred
+  back_to_wall_gap_mm: [0, 100]
+  front_clearance_mm: 400
+
+ottoman:
+  placement: float_allowed
+  relation: in_front_of
+  anchor_categories: [sofa, armchair, loveseat]
+  gap_mm: [300, 500]
+  front_clearance_mm: 300
+
+cabinet:
+  placement: against_wall_preferred
+  back_to_wall_gap_mm: [0, 50]
+  front_clearance_mm: 900
+  faces: room

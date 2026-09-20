@@ -6,6 +6,7 @@ requires-python = ">=3.12"
 dependencies = [
     "roomfittr-schemas",
     "roomfittr-pipeline",
+    "roomfittr-layout",
     "pydantic>=2.9",
     "jsonschema>=4.23",
     "pyyaml>=6.0",
@@ -35,11 +36,12 @@ dev = [
 system-certs = true
 
 [tool.uv.workspace]
-members = ["workers/schemas_py", "workers/pipeline"]
+members = ["workers/schemas_py", "workers/pipeline", "workers/layout"]
 
 [tool.uv.sources]
 roomfittr-schemas = { workspace = true }
 roomfittr-pipeline = { workspace = true }
+roomfittr-layout = { workspace = true }
 
 [tool.ruff]
 line-length = 100
@@ -58,8 +60,16 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
-# Generated models are checked by their own generator, not by us.
-exclude = "workers/schemas_py/roomfittr_schemas/"
+# Two exclusions, both about module identity rather than about quality:
+#
+# - Generated models are checked by their own generator, not by us.
+# - Every worker package has a tests/conftest.py, and pytest requires that
+#   exact filename. With no __init__.py above them (deliberate: two packages
+#   both named `tests` collide in mypy too) they all resolve to the module
+#   `conftest`, which mypy refuses as a duplicate. The fixture factories they
+#   hold are small and fail loudly at collection time; every other test file
+#   stays checked, including the helper modules that carry the real logic.
+exclude = '(workers/schemas_py/roomfittr_schemas/|(^|/)conftest\.py$)'
 
 # Dev-only fallback for finding an FFmpeg binary on machines without one
 # (see `ingest._resolve`). It ships no type information and is never imported

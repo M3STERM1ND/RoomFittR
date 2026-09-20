@@ -1,0 +1,19 @@
+[project]
+name = "roomfittr-layout"
+version = "0.1.0"
+description = "Room analysis, the deterministic validator and the placement solver (implementation-plan.md 5). No LLM calls and no network: the planner that talks to Claude wraps this."
+requires-python = ">=3.12"
+dependencies = [
+    "roomfittr-schemas",
+    "numpy>=2.0",
+    "shapely>=2.0",
+    "pyyaml>=6.0",
+    "pydantic>=2.9",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["roomfittr_layout"]

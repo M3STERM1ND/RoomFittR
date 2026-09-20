@@ -280,3 +280,43 @@ class TestSerialisation:
 
     def test_removable_objects_are_not_obstacles(self) -> None:
         assert all(o["label"] != "sofa" for o in objects.fixed_obstacles(self._objects()))
+
+
+class TestYawConvention:
+    """Pinning the handedness of `yaw_deg`.
+
+    2.4, `align.yaw_rotation` and three.js all agree: a right-handed rotation
+    about +Y carries +X towards -Z. The 2D rotation matrix written by reflex
+    does the opposite, and the consequence -- every ghost box turned 90
+    degrees from the furniture it represents -- fails no schema and no
+    size-based test, because a box and its mirror have the same dimensions.
+    """
+
+    def test_a_positive_yaw_carries_x_towards_negative_z(self) -> None:
+        box = OrientedBox(center=(0.0, 500.0, 0.0), size=(2000.0, 100.0, 1000.0), yaw_deg=90.0)
+        corners = box.corners_xz()
+        # Rotated 90 degrees, the 2000 mm width should now run along Z.
+        span_x = corners[:, 0].max() - corners[:, 0].min()
+        span_z = corners[:, 1].max() - corners[:, 1].min()
+        assert span_x == pytest.approx(100.0, abs=1.0)
+        assert span_z == pytest.approx(2000.0, abs=1.0)
+
+        # ...and specifically, local +X (half the width) lands at -Z.
+        local_plus_x = max(corners, key=lambda c: -c[1])
+        assert local_plus_x[1] == pytest.approx(-1000.0, abs=1.0)
+
+    def test_a_fitted_box_reports_a_yaw_that_reproduces_its_own_cloud(self) -> None:
+        """The round trip that catches a sign error in the fitter: fit a cloud
+        at a known angle, then check the reported yaw rebuilds the same
+        footprint rather than its mirror image."""
+        cloud = box_cloud((0.0, 400.0, 0.0), (2000.0, 800.0, 800.0), yaw_deg=30.0, n=4000)
+        box = objects.fit_box(cloud)
+        assert box is not None
+
+        corners = box.corners_xz()
+        lo = corners.min(axis=0)
+        hi = corners.max(axis=0)
+        actual_lo = cloud[:, [0, 2]].min(axis=0)
+        actual_hi = cloud[:, [0, 2]].max(axis=0)
+        assert lo == pytest.approx(actual_lo, abs=120.0)
+        assert hi == pytest.approx(actual_hi, abs=120.0)

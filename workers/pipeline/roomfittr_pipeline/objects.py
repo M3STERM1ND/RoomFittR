@@ -85,7 +85,14 @@ class OrientedBox:
         return self.size[0] * self.size[1]
 
     def corners_xz(self) -> NDArray[np.float64]:
-        """The footprint's four corners, in order, for overlap tests."""
+        """The footprint's four corners, in order, for overlap tests.
+
+        `yaw_deg` is a right-handed rotation about +Y, matching 2.4,
+        `align.yaw_rotation` and three.js. A positive yaw carries +X towards
+        **-Z**, which is the opposite of the 2D rotation matrix one writes by
+        reflex -- and getting it backwards turns every ghost box 90 degrees
+        from the furniture it represents without failing anything.
+        """
         half_w, half_d = self.size[0] / 2.0, self.size[1] / 2.0
         local = np.array(
             [[-half_w, -half_d], [half_w, -half_d], [half_w, half_d], [-half_w, half_d]],
@@ -93,7 +100,7 @@ class OrientedBox:
         )
         angle = math.radians(self.yaw_deg)
         cos, sin = math.cos(angle), math.sin(angle)
-        rotation = np.array([[cos, -sin], [sin, cos]], dtype=np.float64)
+        rotation = np.array([[cos, sin], [-sin, cos]], dtype=np.float64)
         offset = np.array([self.center[0], self.center[2]], dtype=np.float64)
         corners: NDArray[np.float64] = local @ rotation.T + offset
         return corners
@@ -170,7 +177,11 @@ def _min_area_rectangle(
             best = (
                 (float(centre[0]), float(centre[1])),
                 (float(extent[0]), float(extent[1])),
-                math.degrees(angle),
+                # Negated: `angle` is the heading of the rectangle's long
+                # edge, and a +Y yaw of theta puts local +X at heading
+                # -theta. Reporting the heading directly would mirror every
+                # box's orientation.
+                -math.degrees(angle),
             )
     return best
 
