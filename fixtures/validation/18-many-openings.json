@@ -1,0 +1,34 @@
+{
+  "room": "many-openings",
+  "items": [
+    {
+      "id": "sofa1",
+      "category": "sofa",
+      "center_x_mm": 0.0,
+      "center_z_mm": -1200.0,
+      "width_mm": 1800.0,
+      "depth_mm": 900.0,
+      "height_mm": 800.0,
+      "rotation_deg": 180.0,
+      "elevation_mm": 0.0,
+      "price_cents": 0,
+      "price_age_days": 0,
+      "available": true
+    }
+  ],
+  "budget_cents": null,
+  "enforce_budget": true,
+  "expected": {
+    "schema_version": 1,
+    "fits": true,
+    "violations": [],
+    "items": [],
+    "measured": {
+      "free_floor_pct": 100,
+      "total_price": {
+        "amount_cents": 0,
+        "currency": "USD"
+      }
+    }
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "room": "rectangular-living",
+  "items": [
+    {
+      "id": "sofa1",
+      "category": "sofa",
+      "center_x_mm": -1200.0,
+      "center_z_mm": -1450.0,
+      "width_mm": 2000.0,
+      "depth_mm": 900.0,
+      "height_mm": 800.0,
+      "rotation_deg": 180.0,
+      "elevation_mm": 0.0,
+      "price_cents": 0,
+      "price_age_days": 0,
+      "available": true
+    },
+    {
+      "id": "table1",
+      "category": "coffee_table",
+      "center_x_mm": -1200.0,
+      "center_z_mm": -1400.0,
+      "width_mm": 1100.0,
+      "depth_mm": 600.0,
+      "height_mm": 420.0,
+      "rotation_deg": 0.0,
+      "elevation_mm": 0.0,
+      "price_cents": 0,
+      "price_age_days": 0,
+      "available": true
+    }
+  ],
+  "budget_cents": null,
+  "enforce_budget": true,
+  "expected": {
+    "schema_version": 1,
+    "fits": false,
+    "violations": [],
+    "items": [
+      {
+        "item_id": "sofa1",
+        "violations": [
+          {
+            "code": "H2_ITEM_OVERLAP",
+            "severity": "hard",
+            "message": "The sofa and the coffee table overlap by 600 mm.",
+            "measured_mm": 600,
+            "limit_mm": 0,
+            "related_ids": [
+              "table1"
+            ]
+          }
+        ]
+      },
+      {
+        "item_id": "table1",
+        "violations": [
+          {
+            "code": "H2_ITEM_OVERLAP",
+            "severity": "hard",
+            "message": "The sofa and the coffee table overlap by 600 mm.",
+            "measured_mm": 600,
+            "limit_mm": 0,
+            "related_ids": [
+              "sofa1"
+            ]
+          }
+        ]
+      }
+    ],
+    "measured": {
+      "free_floor_pct": 100,
+      "total_price": {
+        "amount_cents": 0,
+        "currency": "USD"
+      }
+    }
+  }
+}

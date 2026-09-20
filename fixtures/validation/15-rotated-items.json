@@ -1,0 +1,78 @@
+{
+  "room": "rectangular-living",
+  "items": [
+    {
+      "id": "sofa1",
+      "category": "sofa",
+      "center_x_mm": 1700.0,
+      "center_z_mm": 0.0,
+      "width_mm": 2000.0,
+      "depth_mm": 900.0,
+      "height_mm": 800.0,
+      "rotation_deg": 270.0,
+      "elevation_mm": 0.0,
+      "price_cents": 0,
+      "price_age_days": 0,
+      "available": true,
+      "against_wall_id": "W2"
+    },
+    {
+      "id": "shelf1",
+      "category": "bookshelf",
+      "center_x_mm": -2050.0,
+      "center_z_mm": 0.0,
+      "width_mm": 1400.0,
+      "depth_mm": 350.0,
+      "height_mm": 1800.0,
+      "rotation_deg": 90.0,
+      "elevation_mm": 0.0,
+      "price_cents": 0,
+      "price_age_days": 0,
+      "available": true,
+      "against_wall_id": "W4"
+    }
+  ],
+  "budget_cents": null,
+  "enforce_budget": true,
+  "expected": {
+    "schema_version": 1,
+    "fits": true,
+    "violations": [],
+    "items": [
+      {
+        "item_id": "shelf1",
+        "violations": [
+          {
+            "code": "S4_BACK_NOT_TO_WALL",
+            "severity": "soft",
+            "message": "The bookshelf is facing the wall rather than the room.",
+            "related_ids": [
+              "W4"
+            ]
+          }
+        ]
+      },
+      {
+        "item_id": "sofa1",
+        "violations": [
+          {
+            "code": "S4_BACK_NOT_TO_WALL",
+            "severity": "soft",
+            "message": "The sofa is facing the wall rather than the room.",
+            "related_ids": [
+              "W2"
+            ]
+          }
+        ]
+      }
+    ],
+    "measured": {
+      "min_walkway_mm": 3125,
+      "free_floor_pct": 100,
+      "total_price": {
+        "amount_cents": 0,
+        "currency": "USD"
+      }
+    }
+  }
+}

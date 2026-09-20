@@ -1,0 +1,79 @@
+{
+  "room": "rectangular-living",
+  "items": [
+    {
+      "id": "a",
+      "category": "bookshelf",
+      "center_x_mm": 0.0,
+      "center_z_mm": 0.0,
+      "width_mm": 1000.0,
+      "depth_mm": 600.0,
+      "height_mm": 1800.0,
+      "rotation_deg": 0.0,
+      "elevation_mm": 0.0,
+      "price_cents": 0,
+      "price_age_days": 0,
+      "available": true
+    },
+    {
+      "id": "b",
+      "category": "bookshelf",
+      "center_x_mm": 987.5,
+      "center_z_mm": 0.0,
+      "width_mm": 1000.0,
+      "depth_mm": 600.0,
+      "height_mm": 1800.0,
+      "rotation_deg": 0.0,
+      "elevation_mm": 0.0,
+      "price_cents": 0,
+      "price_age_days": 0,
+      "available": true
+    }
+  ],
+  "budget_cents": null,
+  "enforce_budget": true,
+  "expected": {
+    "schema_version": 1,
+    "fits": false,
+    "violations": [],
+    "items": [
+      {
+        "item_id": "a",
+        "violations": [
+          {
+            "code": "H2_ITEM_OVERLAP",
+            "severity": "hard",
+            "message": "The bookshelf and the bookshelf overlap by 12 mm.",
+            "measured_mm": 12,
+            "limit_mm": 0,
+            "related_ids": [
+              "b"
+            ]
+          }
+        ]
+      },
+      {
+        "item_id": "b",
+        "violations": [
+          {
+            "code": "H2_ITEM_OVERLAP",
+            "severity": "hard",
+            "message": "The bookshelf and the bookshelf overlap by 12 mm.",
+            "measured_mm": 12,
+            "limit_mm": 0,
+            "related_ids": [
+              "a"
+            ]
+          }
+        ]
+      }
+    ],
+    "measured": {
+      "free_floor_pct": 100,
+      "total_price": {
+        "amount_cents": 0,
+        "currency": "USD"
+      }
+    }
+  }
+}

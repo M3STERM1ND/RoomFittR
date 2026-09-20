@@ -25,9 +25,11 @@ import numpy as np
 from numpy.typing import NDArray
 from shapely.geometry import MultiPolygon, Polygon
 from shapely.geometry.base import BaseGeometry
-from shapely.ops import unary_union
 
-from .geometry import Footprint, rectangle_from_wall
+from .geometry import (
+    Footprint,
+    rectangle_from_wall,
+)
 
 # 5.2: door keep-out is `width x width` into the room, plus a 900 mm approach.
 DOOR_APPROACH_MM = 900.0
@@ -109,6 +111,24 @@ class FreeRun:
 
 
 @dataclass(frozen=True, slots=True)
+class StaticGrid:
+    """The part of the circulation raster that never changes for a room.
+
+    Rasterising the floor and measuring every cell's clearance from the walls
+    costs a pass over several thousand cells. The solver asks the circulation
+    question once per candidate pose, and none of this work depends on where
+    the furniture is, so it is computed once in `analyse()` and reused.
+    """
+
+    walkable: NDArray[np.bool_]
+    grid_x: NDArray[np.float64]
+    grid_z: NDArray[np.float64]
+    origin_x_mm: float
+    origin_z_mm: float
+    cell_mm: float
+
+
+@dataclass(frozen=True, slots=True)
 class CirculationGrid:
     """The room rasterised for connectivity questions."""
 
@@ -137,10 +157,12 @@ class RoomAnalysis:
     openings: list[Opening]
     obstacles: list[Obstacle]
     ceiling_height_mm: float
-    door_keepouts: dict[str, Polygon]
-    window_zones: dict[str, Polygon]
+    door_keepouts: dict[str, Footprint]
+    window_zones: dict[str, Footprint]
     usable_floor: Polygon
     free_runs: list[FreeRun]
+    # The room's static circulation raster, computed once. See `static_grid`.
+    base_grid: StaticGrid
     warnings: list[str] = field(default_factory=list)
 
     @property
@@ -166,7 +188,7 @@ def _footprint_from_obstacle(raw: dict[str, Any]) -> Footprint:
     )
 
 
-def door_keepout(wall: Wall, opening: Opening) -> Polygon:
+def door_keepout(wall: Wall, opening: Opening) -> Footprint:
     """5.2: a `width x width` swing area plus a 900 mm approach zone.
 
     When the swing is unknown -- which V1 almost always leaves it (3.6) -- the
@@ -187,7 +209,7 @@ def door_keepout(wall: Wall, opening: Opening) -> Polygon:
     return rectangle_from_wall(wall.start, wall.end, start, max(end - start, 1.0), swing_depth)
 
 
-def window_zone(wall: Wall, opening: Opening) -> Polygon:
+def window_zone(wall: Wall, opening: Opening) -> Footprint:
     """5.2: the 600 mm-deep strip in front of a window.
 
     Not a keep-out. S3 only warns, and only for items tall enough to block
@@ -247,16 +269,67 @@ def free_runs(wall: Wall, openings: list[Opening], obstacles: list[Obstacle]) ->
     return runs
 
 
-def circulation_grid(
-    floor: Polygon, blocked: list[Polygon], *, cell_mm: float = GRID_MM
-) -> CirculationGrid:
-    """Rasterise the room and grow the obstacles by a person's radius.
+def _distance_to_boundary_grid(
+    grid_x: NDArray[np.float64], grid_z: NDArray[np.float64], polygon: Polygon
+) -> NDArray[np.float64]:
+    """Distance from every cell centre to the polygon's boundary.
 
-    Dilating the obstacles rather than shrinking the person is the standard
+    The vectorised twin of `geometry.distance_to_boundary`. Both exist on
+    purpose: the scalar one is the definition the TypeScript validator
+    mirrors, this one is what makes the grid affordable, and a test asserts
+    they agree.
+    """
+    coords = list(polygon.exterior.coords)[:-1]
+    best = np.full(grid_x.shape, np.inf, dtype=np.float64)
+    for index in range(len(coords)):
+        ax, az = coords[index]
+        bx, bz = coords[(index + 1) % len(coords)]
+        vx, vz = bx - ax, bz - az
+        length_squared = vx * vx + vz * vz
+        if length_squared < 1e-12:
+            best = np.minimum(best, np.hypot(grid_x - ax, grid_z - az))
+            continue
+        t = np.clip(((grid_x - ax) * vx + (grid_z - az) * vz) / length_squared, 0.0, 1.0)
+        best = np.minimum(best, np.hypot(grid_x - (ax + t * vx), grid_z - (az + t * vz)))
+    return best
+
+
+def _distance_to_footprint_grid(
+    grid_x: NDArray[np.float64], grid_z: NDArray[np.float64], item: Footprint
+) -> NDArray[np.float64]:
+    """Distance from every cell centre to an oriented rectangle; 0 inside.
+
+    The vectorised twin of `geometry.distance_to_footprint`.
+    """
+    angle = math.radians(-item.rotation_deg)
+    cos, sin = math.cos(angle), math.sin(angle)
+    dx = grid_x - item.center_x_mm
+    dz = grid_z - item.center_z_mm
+    local_x = dx * cos + dz * sin
+    local_z = -dx * sin + dz * cos
+    outside_x = np.maximum(np.abs(local_x) - item.width_mm / 2.0, 0.0)
+    outside_z = np.maximum(np.abs(local_z) - item.depth_mm / 2.0, 0.0)
+    return np.hypot(outside_x, outside_z)
+
+
+def static_grid(floor: Polygon, *, cell_mm: float = GRID_MM) -> StaticGrid:
+    """Everything about the room's walkability that furniture cannot change.
+
+    Dilating obstacles rather than shrinking the person is the standard
     configuration-space trick: it turns "can a 760 mm-wide person get
     through?" into "is there a path of free cells?", which a flood fill
-    answers exactly.
+    answers exactly. The walls are the first such obstacle -- a person cannot
+    stand with their centre closer than their radius to one.
+
+    **Why wall clearance is a distance and not `floor.buffer(-radius)`.** The
+    two describe the same set, but shapely approximates a rounded offset with
+    a fixed number of segments per quadrant, and the TypeScript validator has
+    to agree with this grid cell for cell (5.5 parity). A point-to-boundary
+    distance leaves no such freedom: both sides compute the same number, so
+    both sides mark the same cells.
     """
+    from shapely import contains_xy
+
     min_x, min_z, max_x, max_z = floor.bounds
     columns = max(int(math.ceil((max_x - min_x) / cell_mm)), 1)
     rows = max(int(math.ceil((max_z - min_z) / cell_mm)), 1)
@@ -265,28 +338,50 @@ def circulation_grid(
     zs = min_z + (np.arange(rows) + 0.5) * cell_mm
     grid_x, grid_z = np.meshgrid(xs, zs)
 
-    # `Polygon.contains` per point is far too slow at this resolution --
-    # a 5 x 4 m room is ~8000 cells. `contains_xy` is the vectorised form.
-    from shapely import contains_xy
-
     inside: NDArray[np.bool_] = np.asarray(contains_xy(floor, grid_x, grid_z), dtype=bool)
+    clearance = _distance_to_boundary_grid(grid_x, grid_z, floor)
 
-    occupied: NDArray[np.bool_] = np.zeros((rows, columns), dtype=bool)
-    if blocked:
-        merged = unary_union([shape for shape in blocked if not shape.is_empty])
-        if not merged.is_empty:
-            # Dilate by the person radius, then mark the cells it covers.
-            grown = merged.buffer(PERSON_RADIUS_MM)
-            occupied = np.asarray(contains_xy(grown, grid_x, grid_z), dtype=bool)
-
-    # The walls themselves are an obstacle: a person cannot stand with their
-    # centre closer than their radius to a wall.
-    near_wall: NDArray[np.bool_] = ~np.asarray(
-        contains_xy(floor.buffer(-PERSON_RADIUS_MM), grid_x, grid_z), dtype=bool
+    return StaticGrid(
+        walkable=inside & (clearance >= PERSON_RADIUS_MM),
+        grid_x=grid_x,
+        grid_z=grid_z,
+        origin_x_mm=min_x,
+        origin_z_mm=min_z,
+        cell_mm=cell_mm,
     )
 
-    walkable: NDArray[np.bool_] = inside & ~occupied & ~near_wall
-    return CirculationGrid(walkable=walkable, origin_x_mm=min_x, origin_z_mm=min_z, cell_mm=cell_mm)
+
+def circulation_grid(
+    floor: Polygon,
+    blocked: list[Footprint],
+    *,
+    cell_mm: float = GRID_MM,
+    base: StaticGrid | None = None,
+) -> CirculationGrid:
+    """The walkable cells with `blocked` rectangles in place.
+
+    A cell is blocked when its centre lies within a person's radius of any
+    item -- exactly the Minkowski dilation a buffer would produce, computed
+    as a distance so the browser reproduces it to the last cell.
+
+    `base` is the room's static raster. Passing it is what keeps the solver
+    affordable, since it asks this question once per candidate pose.
+    """
+    static = base if base is not None else static_grid(floor, cell_mm=cell_mm)
+
+    occupied: NDArray[np.bool_] = np.zeros(static.walkable.shape, dtype=bool)
+    for item in blocked:
+        if item.width_mm <= 0 or item.depth_mm <= 0:
+            continue
+        distances = _distance_to_footprint_grid(static.grid_x, static.grid_z, item)
+        occupied |= distances < PERSON_RADIUS_MM
+
+    return CirculationGrid(
+        walkable=static.walkable & ~occupied,
+        origin_x_mm=static.origin_x_mm,
+        origin_z_mm=static.origin_z_mm,
+        cell_mm=static.cell_mm,
+    )
 
 
 def connected_component(grid: CirculationGrid, seed: tuple[int, int]) -> NDArray[np.bool_]:
@@ -359,8 +454,8 @@ def analyse(room_model: dict[str, Any]) -> RoomAnalysis:
     ]
 
     by_id = {wall.id: wall for wall in walls}
-    door_keepouts: dict[str, Polygon] = {}
-    window_zones: dict[str, Polygon] = {}
+    door_keepouts: dict[str, Footprint] = {}
+    window_zones: dict[str, Footprint] = {}
     for opening in openings:
         wall = by_id.get(opening.wall_id)
         if wall is None:
@@ -370,7 +465,9 @@ def analyse(room_model: dict[str, Any]) -> RoomAnalysis:
         elif opening.type == "window":
             window_zones[opening.id] = window_zone(wall, opening)
 
-    blocking = [o.footprint.polygon() for o in obstacles] + list(door_keepouts.values())
+    blocking = [o.footprint.polygon() for o in obstacles] + [
+        keepout.polygon() for keepout in door_keepouts.values()
+    ]
     remaining: BaseGeometry = floor
     for shape in blocking:
         remaining = remaining.difference(shape)
@@ -402,6 +499,7 @@ def analyse(room_model: dict[str, Any]) -> RoomAnalysis:
         window_zones=window_zones,
         usable_floor=usable if isinstance(usable, Polygon) else floor,
         free_runs=runs,
+        base_grid=static_grid(floor),
         warnings=warnings,
     )
 

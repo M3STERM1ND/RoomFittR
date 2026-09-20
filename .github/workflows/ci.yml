@@ -18,12 +18,15 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          # 24, not 22: packages/geometry's tests are TypeScript and rely on
+          # node's native type stripping, which is only on by default from 23.6.
+          node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
+      - run: pnpm test
       - run: pnpm build
 
   python:
@@ -59,7 +62,9 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          # 24, not 22: packages/geometry's tests are TypeScript and rely on
+          # node's native type stripping, which is only on by default from 23.6.
+          node-version: 24
           cache: pnpm
       - uses: astral-sh/setup-uv@v5
         with:
@@ -67,6 +72,21 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: uv sync --locked
       - run: pnpm schemas:check
+
+  layout-rules-not-stale:
+    name: Generated category rules are current
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          # 24, not 22: packages/geometry's tests are TypeScript and rely on
+          # node's native type stripping, which is only on by default from 23.6.
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm geometry:check
 
   ground-truth:
     name: Ground-truth files are valid

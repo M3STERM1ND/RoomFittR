@@ -127,7 +127,7 @@ class ValidationReport:
     violations: list[Violation]
     items: dict[str, list[Violation]]
     min_walkway_mm: int | None = None
-    free_floor_pct: float | None = None
+    free_floor_pct: int | None = None
     total_price_cents: int | None = None
 
     def as_json(self) -> dict[str, Any]:
@@ -135,7 +135,7 @@ class ValidationReport:
         if self.min_walkway_mm is not None:
             measured["min_walkway_mm"] = self.min_walkway_mm
         if self.free_floor_pct is not None:
-            measured["free_floor_pct"] = round(self.free_floor_pct, 2)
+            measured["free_floor_pct"] = self.free_floor_pct
         if self.total_price_cents is not None:
             measured["total_price"] = {"amount_cents": self.total_price_cents, "currency": "USD"}
 
@@ -194,6 +194,7 @@ def validate(
     min_gap = _check_category_clearances(items, per_item)
 
     grid, connected_pct, blocked_doors = _check_circulation(items, analysis)
+    del grid
     if blocked_doors:
         violations.append(
             Violation(
@@ -205,28 +206,28 @@ def validate(
                 related_ids=blocked_doors,
             )
         )
-    elif connected_pct < MIN_CONNECTED_FRACTION * 100:
+    elif connected_pct < int(MIN_CONNECTED_FRACTION * 100):
         violations.append(
             Violation(
                 code="H6_CIRCULATION_BLOCKED",
                 severity="hard",
                 message=(
-                    f"This layout cuts the room up: only {connected_pct:.0f}% of the "
+                    f"This layout cuts the room up: only {connected_pct}% of the "
                     "open floor can be reached in one piece."
                 ),
-                measured_mm=_mm(connected_pct),
-                limit_mm=_mm(MIN_CONNECTED_FRACTION * 100),
+                measured_mm=connected_pct,
+                limit_mm=int(MIN_CONNECTED_FRACTION * 100),
             )
         )
 
     total_price = sum(item.price_cents for item in items)
     if budget_cents is not None and total_price > budget_cents:
-        over = total_price - budget_cents
+        over_dollars = (total_price - budget_cents) // 100
         violations.append(
             Violation(
                 code="H7_OVER_BUDGET",
                 severity="hard" if enforce_budget else "soft",
-                message=f"This layout is ${over / 100:,.0f} over your budget.",
+                message=f"This layout is ${over_dollars:,} over your budget.",
             )
         )
 
@@ -349,16 +350,20 @@ def _check_obstacles(
 def _check_door_keepouts(
     items: list[PlacedItem], analysis: RoomAnalysis, per_item: dict[str, list[Violation]]
 ) -> None:
-    """H4: nothing but a floor covering inside a door's swing and approach."""
+    """H4: nothing but a floor covering inside a door's swing and approach.
+
+    The keep-out is an oriented rectangle, so this is the same separating-axis
+    test used everywhere else rather than a polygon intersection. That is what
+    lets the TypeScript validator return the identical answer (5.5 parity)
+    without carrying a polygon clipper into the browser.
+    """
     for item in items:
         if item.is_floor_covering:
             continue
-        shape = item.footprint.polygon()
         for opening_id, keepout in analysis.door_keepouts.items():
-            if keepout.is_empty:
+            if keepout.width_mm <= 0:
                 continue
-            intersection = shape.intersection(keepout)
-            if intersection.is_empty or intersection.area <= 1.0:
+            if separating_axis_overlap(item.footprint, keepout) <= TOLERANCE_MM:
                 continue
             per_item[item.id].append(
                 Violation(
@@ -401,14 +406,13 @@ def _check_windows(
     """
     by_id = {opening.id: opening for opening in analysis.openings}
     for item in items:
-        shape = item.footprint.polygon()
         for opening_id, zone in analysis.window_zones.items():
             opening = by_id.get(opening_id)
-            if opening is None or zone.is_empty:
+            if opening is None or zone.width_mm <= 0:
                 continue
             if item.footprint.top_mm <= opening.sill_mm - 50.0:
                 continue
-            if shape.intersection(zone).area <= 1.0:
+            if separating_axis_overlap(item.footprint, zone) <= TOLERANCE_MM:
                 continue
             per_item[item.id].append(
                 Violation(
@@ -558,19 +562,19 @@ def _check_category_clearances(
 
 def _check_circulation(
     items: list[PlacedItem], analysis: RoomAnalysis
-) -> tuple[CirculationGrid, float, list[str]]:
+) -> tuple[CirculationGrid, int, list[str]]:
     """H6: every door reachable, and most of the free floor connected.
 
     Floor coverings do not block: you can walk on a rug.
     """
-    blocking = [item.footprint.polygon() for item in items if not item.is_floor_covering] + [
-        obstacle.footprint.polygon() for obstacle in analysis.obstacles
+    blocking = [item.footprint for item in items if not item.is_floor_covering] + [
+        obstacle.footprint for obstacle in analysis.obstacles
     ]
-    grid = circulation_grid(analysis.floor, blocking)
+    grid = circulation_grid(analysis.floor, blocking, base=analysis.base_grid)
 
     total = grid.walkable_cells
     if total == 0:
-        return grid, 0.0, []
+        return grid, 0, []
 
     doors = [
         (opening, analysis.wall(opening.wall_id))
@@ -588,7 +592,7 @@ def _check_circulation(
         # No door to start from. Use the largest reachable region so the
         # measurement still means something.
         largest = _largest_region(grid)
-        return grid, 100.0 * largest / total, []
+        return grid, 100 * largest // total, []
 
     reachable = connected_component(grid, seeds[0][1])
     blocked = [opening_id for opening_id, cell in seeds[1:] if not _cell_in(reachable, cell)]
@@ -596,7 +600,7 @@ def _check_circulation(
     if not _cell_in(grid.walkable, seeds[0][1]):
         blocked.insert(0, seeds[0][0])
 
-    return grid, 100.0 * int(reachable.sum()) / total, blocked
+    return grid, 100 * int(reachable.sum()) // total, blocked
 
 
 def _cell_in(mask: np.ndarray, cell: tuple[int, int]) -> bool:

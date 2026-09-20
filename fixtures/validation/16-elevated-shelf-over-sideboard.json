@@ -1,0 +1,64 @@
+{
+  "room": "rectangular-living",
+  "items": [
+    {
+      "id": "side1",
+      "category": "console_table",
+      "center_x_mm": 0.0,
+      "center_z_mm": -1600.0,
+      "width_mm": 1200.0,
+      "depth_mm": 400.0,
+      "height_mm": 800.0,
+      "rotation_deg": 0.0,
+      "elevation_mm": 0.0,
+      "price_cents": 0,
+      "price_age_days": 0,
+      "available": true
+    },
+    {
+      "id": "shelf1",
+      "category": "bookshelf",
+      "center_x_mm": 0.0,
+      "center_z_mm": -1600.0,
+      "width_mm": 1200.0,
+      "depth_mm": 300.0,
+      "height_mm": 300.0,
+      "rotation_deg": 0.0,
+      "elevation_mm": 1400.0,
+      "price_cents": 0,
+      "price_age_days": 0,
+      "available": true
+    }
+  ],
+  "budget_cents": null,
+  "enforce_budget": true,
+  "expected": {
+    "schema_version": 1,
+    "fits": true,
+    "violations": [],
+    "items": [
+      {
+        "item_id": "shelf1",
+        "violations": [
+          {
+            "code": "S3_WINDOW_BLOCKED",
+            "severity": "soft",
+            "message": "The bookshelf blocks the window.",
+            "measured_mm": 1700,
+            "limit_mm": 900,
+            "related_ids": [
+              "O2"
+            ]
+          }
+        ]
+      }
+    ],
+    "measured": {
+      "free_floor_pct": 100,
+      "total_price": {
+        "amount_cents": 0,
+        "currency": "USD"
+      }
+    }
+  }
+}

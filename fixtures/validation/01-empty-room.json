@@ -1,0 +1,19 @@
+{
+  "room": "rectangular-living",
+  "items": [],
+  "budget_cents": null,
+  "enforce_budget": true,
+  "expected": {
+    "schema_version": 1,
+    "fits": true,
+    "violations": [],
+    "items": [],
+    "measured": {
+      "free_floor_pct": 100,
+      "total_price": {
+        "amount_cents": 0,
+        "currency": "USD"
+      }
+    }
+  }
+}

@@ -430,10 +430,10 @@ def circulation_ok(
     table in the middle of a 1.9 m-deep room leaves 650 mm either side, and
     650 mm is not a walkway.
     """
-    blocking = [i.footprint.polygon() for i in items if not i.is_floor_covering] + [
-        o.footprint.polygon() for o in analysis.obstacles
+    blocking = [i.footprint for i in items if not i.is_floor_covering] + [
+        o.footprint for o in analysis.obstacles
     ]
-    grid = circulation_grid(analysis.floor, blocking)
+    grid = circulation_grid(analysis.floor, blocking, base=analysis.base_grid)
     total = grid.walkable_cells
     if total == 0:
         return False
@@ -504,7 +504,7 @@ def _hard_ok(
 
     if not rule.is_floor_covering:
         for keepout in analysis.door_keepouts.values():
-            if not keepout.is_empty and shape.intersection(keepout).area > 1.0:
+            if keepout.width_mm > 0 and separating_axis_overlap(footprint, keepout) > TOLERANCE_MM:
                 return False
     for obstacle in analysis.obstacles:
         if (
@@ -576,11 +576,11 @@ def score_pose(
     # Soft penalties the validator would raise.
     for opening_id, zone in analysis.window_zones.items():
         opening = next((o for o in analysis.openings if o.id == opening_id), None)
-        if opening is None or zone.is_empty:
+        if opening is None or zone.width_mm <= 0:
             continue
         if (
             footprint.top_mm > opening.sill_mm - 50.0
-            and footprint.polygon().intersection(zone).area > 1.0
+            and separating_axis_overlap(footprint, zone) > TOLERANCE_MM
         ):
             score -= W_SOFT_PENALTY
     return score

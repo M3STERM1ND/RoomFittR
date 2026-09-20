@@ -1,0 +1,134 @@
+{
+  "sofa": {
+    "layer": "floor",
+    "placement": "against_wall_preferred",
+    "frontClearanceMm": 450,
+    "sideClearanceMm": 0
+  },
+  "sectional": {
+    "layer": "floor",
+    "placement": "against_wall_preferred",
+    "frontClearanceMm": 450,
+    "sideClearanceMm": 0
+  },
+  "loveseat": {
+    "layer": "floor",
+    "placement": "against_wall_preferred",
+    "frontClearanceMm": 450,
+    "sideClearanceMm": 0
+  },
+  "armchair": {
+    "layer": "floor",
+    "placement": "float_allowed",
+    "frontClearanceMm": 450,
+    "sideClearanceMm": 0
+  },
+  "accent_chair": {
+    "layer": "floor",
+    "placement": "float_allowed",
+    "frontClearanceMm": 400,
+    "sideClearanceMm": 0
+  },
+  "coffee_table": {
+    "layer": "floor",
+    "placement": "float_allowed",
+    "frontClearanceMm": 350,
+    "sideClearanceMm": 0
+  },
+  "side_table": {
+    "layer": "floor",
+    "placement": "float_allowed",
+    "frontClearanceMm": 300,
+    "sideClearanceMm": 0
+  },
+  "console_table": {
+    "layer": "floor",
+    "placement": "against_wall_preferred",
+    "frontClearanceMm": 600,
+    "sideClearanceMm": 0
+  },
+  "tv_stand": {
+    "layer": "floor",
+    "placement": "against_wall_preferred",
+    "frontClearanceMm": 600,
+    "sideClearanceMm": 0
+  },
+  "bookshelf": {
+    "layer": "floor",
+    "placement": "against_wall_preferred",
+    "frontClearanceMm": 900,
+    "sideClearanceMm": 0
+  },
+  "bed_frame": {
+    "layer": "floor",
+    "placement": "headboard_to_wall",
+    "frontClearanceMm": 900,
+    "sideClearanceMm": 600
+  },
+  "nightstand": {
+    "layer": "floor",
+    "placement": "against_wall_preferred",
+    "frontClearanceMm": 300,
+    "sideClearanceMm": 0
+  },
+  "dresser": {
+    "layer": "floor",
+    "placement": "against_wall_preferred",
+    "frontClearanceMm": 900,
+    "sideClearanceMm": 0
+  },
+  "desk": {
+    "layer": "floor",
+    "placement": "against_wall_preferred",
+    "frontClearanceMm": 900,
+    "sideClearanceMm": 0
+  },
+  "office_chair": {
+    "layer": "floor",
+    "placement": "float_allowed",
+    "frontClearanceMm": 300,
+    "sideClearanceMm": 0
+  },
+  "dining_table": {
+    "layer": "floor",
+    "placement": "float_allowed",
+    "frontClearanceMm": 900,
+    "sideClearanceMm": 900
+  },
+  "dining_chair": {
+    "layer": "floor",
+    "placement": "float_allowed",
+    "frontClearanceMm": 0,
+    "sideClearanceMm": 0
+  },
+  "rug": {
+    "layer": "floor_covering",
+    "placement": "float_allowed",
+    "frontClearanceMm": 0,
+    "sideClearanceMm": 0
+  },
+  "floor_lamp": {
+    "layer": "floor",
+    "placement": "float_allowed",
+    "frontClearanceMm": 0,
+    "sideClearanceMm": 0
+  },
+  "bench": {
+    "layer": "floor",
+    "placement": "against_wall_preferred",
+    "frontClearanceMm": 400,
+    "sideClearanceMm": 0
+  },
+  "ottoman": {
+    "layer": "floor",
+    "placement": "float_allowed",
+    "frontClearanceMm": 300,
+    "sideClearanceMm": 0
+  },
+  "cabinet": {
+    "layer": "floor",
+    "placement": "against_wall_preferred",
+    "frontClearanceMm": 900,
+    "sideClearanceMm": 0
+  }
+}

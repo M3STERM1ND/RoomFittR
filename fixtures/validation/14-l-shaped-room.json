@@ -1,0 +1,73 @@
+{
+  "room": "l-shaped-living",
+  "items": [
+    {
+      "id": "sofa1",
+      "category": "sofa",
+      "center_x_mm": 0.0,
+      "center_z_mm": -1400.0,
+      "width_mm": 2000.0,
+      "depth_mm": 900.0,
+      "height_mm": 800.0,
+      "rotation_deg": 180.0,
+      "elevation_mm": 0.0,
+      "price_cents": 0,
+      "price_age_days": 0,
+      "available": true
+    },
+    {
+      "id": "table1",
+      "category": "coffee_table",
+      "center_x_mm": 0.0,
+      "center_z_mm": -400.0,
+      "width_mm": 1100.0,
+      "depth_mm": 600.0,
+      "height_mm": 420.0,
+      "rotation_deg": 0.0,
+      "elevation_mm": 0.0,
+      "price_cents": 0,
+      "price_age_days": 0,
+      "available": true
+    }
+  ],
+  "budget_cents": null,
+  "enforce_budget": true,
+  "expected": {
+    "schema_version": 1,
+    "fits": true,
+    "violations": [
+      {
+        "code": "S1_WALKWAY_TIGHT",
+        "severity": "soft",
+        "message": "The tightest gap between furniture is 250 mm. 900 mm is more comfortable to walk through.",
+        "measured_mm": 250,
+        "limit_mm": 900
+      }
+    ],
+    "items": [
+      {
+        "item_id": "sofa1",
+        "violations": [
+          {
+            "code": "S2_CATEGORY_CLEARANCE",
+            "severity": "soft",
+            "message": "Only 250 mm between the sofa and the coffee table; 450 mm is the usual minimum.",
+            "measured_mm": 250,
+            "limit_mm": 450,
+            "related_ids": [
+              "table1"
+            ]
+          }
+        ]
+      }
+    ],
+    "measured": {
+      "min_walkway_mm": 250,
+      "free_floor_pct": 72,
+      "total_price": {
+        "amount_cents": 0,
+        "currency": "USD"
+      }
+    }
+  }
+}

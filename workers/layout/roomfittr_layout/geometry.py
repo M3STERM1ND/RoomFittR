@@ -118,6 +118,11 @@ class Footprint:
         return shared > TOLERANCE_MM
 
 
+def corners_of(f: Footprint) -> NDArray[np.float64]:
+    """Free-function form of `Footprint.corners`, for callers that have one."""
+    return f.corners()
+
+
 def separating_axis_overlap(a: Footprint, b: Footprint) -> float:
     """Overlap depth between two oriented rectangles in mm; 0 means separate.
 
@@ -195,31 +200,78 @@ def rectangle_from_wall(
     offset_mm: float,
     width_mm: float,
     depth_mm: float,
-) -> Polygon:
+    *,
+    height_mm: float = 1.0,
+) -> Footprint:
     """A rectangle sitting against a wall, extending `depth_mm` into the room.
 
     Used for door keep-outs and window zones (5.2). "Into the room" is the
     wall's left normal, which for the counter-clockwise floor polygon the
     schema requires points inwards.
+
+    Returns a `Footprint` rather than a polygon, deliberately. 5.5 says the
+    validator has exactly two primitives, an oriented rectangle and the room;
+    a keep-out expressed as a general polygon would be a third, and every
+    operation on it would then need a polygon-clipping implementation that
+    the TypeScript validator has to reproduce exactly. As a rectangle it is
+    handled by the separating-axis test both sides already share.
     """
     dx = end[0] - start[0]
     dz = end[1] - start[1]
     length = math.hypot(dx, dz)
     if length < 1e-9:
-        return Polygon()
+        return Footprint(0.0, 0.0, 0.0, 0.0, 0.0)
     ux, uz = dx / length, dz / length
     nx, nz = -uz, ux  # left normal: into the room for a CCW polygon
 
-    base_x = start[0] + ux * offset_mm
-    base_z = start[1] + uz * offset_mm
-    far_x = base_x + ux * width_mm
-    far_z = base_z + uz * width_mm
-
-    return Polygon(
-        [
-            (base_x, base_z),
-            (far_x, far_z),
-            (far_x + nx * depth_mm, far_z + nz * depth_mm),
-            (base_x + nx * depth_mm, base_z + nz * depth_mm),
-        ]
+    along = offset_mm + width_mm / 2.0
+    out = depth_mm / 2.0
+    return Footprint(
+        center_x_mm=start[0] + ux * along + nx * out,
+        center_z_mm=start[1] + uz * along + nz * out,
+        width_mm=width_mm,
+        depth_mm=depth_mm,
+        height_mm=height_mm,
+        # The rectangle's local +X runs along the wall. A +Y yaw of theta puts
+        # local +X at heading -theta, hence the negation.
+        rotation_deg=-math.degrees(math.atan2(uz, ux)) % 360.0,
     )
+
+
+def distance_to_footprint(point: tuple[float, float], f: Footprint) -> float:
+    """Distance from an XZ point to an oriented rectangle; 0 if inside.
+
+    Computed in the rectangle's own frame, where the problem is the
+    axis-aligned one. Exact, dependency-free, and identical in three lines of
+    TypeScript -- which is the reason it exists rather than a shapely call:
+    the circulation grid asks this question for every cell, and the browser
+    has to get the same answer.
+    """
+    local_x, local_z = rotate_xz(
+        point[0] - f.center_x_mm, point[1] - f.center_z_mm, -f.rotation_deg
+    )
+    dx = max(abs(local_x) - f.width_mm / 2.0, 0.0)
+    dz = max(abs(local_z) - f.depth_mm / 2.0, 0.0)
+    return math.hypot(dx, dz)
+
+
+def distance_to_boundary(point: tuple[float, float], polygon: Polygon) -> float:
+    """Distance from an XZ point to a polygon's boundary."""
+    coords = list(polygon.exterior.coords)[:-1]
+    best = math.inf
+    for index in range(len(coords)):
+        a = coords[index]
+        b = coords[(index + 1) % len(coords)]
+        best = min(best, _point_to_segment(point, (a[0], a[1]), (b[0], b[1])))
+    return best
+
+
+def _point_to_segment(
+    p: tuple[float, float], a: tuple[float, float], b: tuple[float, float]
+) -> float:
+    vx, vz = b[0] - a[0], b[1] - a[1]
+    length_squared = vx * vx + vz * vz
+    if length_squared < 1e-12:
+        return math.hypot(p[0] - a[0], p[1] - a[1])
+    t = max(0.0, min(1.0, ((p[0] - a[0]) * vx + (p[1] - a[1]) * vz) / length_squared))
+    return math.hypot(p[0] - (a[0] + t * vx), p[1] - (a[1] + t * vz))

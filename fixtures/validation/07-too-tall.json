@@ -1,0 +1,47 @@
+{
+  "room": "rectangular-living",
+  "items": [
+    {
+      "id": "shelf1",
+      "category": "bookshelf",
+      "center_x_mm": -1400.0,
+      "center_z_mm": -1700.0,
+      "width_mm": 900.0,
+      "depth_mm": 300.0,
+      "height_mm": 2700.0,
+      "rotation_deg": 0.0,
+      "elevation_mm": 0.0,
+      "price_cents": 0,
+      "price_age_days": 0,
+      "available": true
+    }
+  ],
+  "budget_cents": null,
+  "enforce_budget": true,
+  "expected": {
+    "schema_version": 1,
+    "fits": false,
+    "violations": [],
+    "items": [
+      {
+        "item_id": "shelf1",
+        "violations": [
+          {
+            "code": "H5_TOO_TALL",
+            "severity": "hard",
+            "message": "The bookshelf is 2700 mm tall and the ceiling is 2700 mm.",
+            "measured_mm": 2700,
+            "limit_mm": 2650
+          }
+        ]
+      }
+    ],
+    "measured": {
+      "free_floor_pct": 100,
+      "total_price": {
+        "amount_cents": 0,
+        "currency": "USD"
+      }
+    }
+  }
+}

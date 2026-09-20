@@ -15,7 +15,10 @@
     "py:lint": "uv run ruff check .",
     "py:format:check": "uv run ruff format --check .",
     "py:typecheck": "uv run mypy workers eval",
-    "py:test": "uv run pytest"
+    "py:test": "uv run pytest",
+    "test": "pnpm -r --if-present test",
+    "geometry:gen": "pnpm --filter @roomfittr/geometry gen",
+    "geometry:check": "pnpm --filter @roomfittr/geometry check"
   },
   "devDependencies": {
     "prettier": "^3.4.2"

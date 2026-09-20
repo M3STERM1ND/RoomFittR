@@ -1,0 +1,62 @@
+{
+  "room": "small-bedroom",
+  "items": [
+    {
+      "id": "sofa1",
+      "category": "sofa",
+      "center_x_mm": 0.0,
+      "center_z_mm": -1000.0,
+      "width_mm": 2900.0,
+      "depth_mm": 900.0,
+      "height_mm": 800.0,
+      "rotation_deg": 180.0,
+      "elevation_mm": 0.0,
+      "price_cents": 0,
+      "price_age_days": 0,
+      "available": true
+    }
+  ],
+  "budget_cents": null,
+  "enforce_budget": true,
+  "expected": {
+    "schema_version": 1,
+    "fits": false,
+    "violations": [],
+    "items": [
+      {
+        "item_id": "sofa1",
+        "violations": [
+          {
+            "code": "H1_OUTSIDE_FLOOR",
+            "severity": "hard",
+            "message": "The sofa sticks 150 mm outside the room.",
+            "measured_mm": 150,
+            "limit_mm": 0
+          },
+          {
+            "code": "H4_DOOR_KEEPOUT",
+            "severity": "hard",
+            "message": "The sofa is in the way of the door.",
+            "related_ids": [
+              "O1"
+            ]
+          },
+          {
+            "code": "S5_OVERSIZED_FOR_ROOM",
+            "severity": "soft",
+            "message": "The sofa is 2900 mm across in a room 3000 mm wide.",
+            "measured_mm": 2900,
+            "limit_mm": 2700
+          }
+        ]
+      }
+    ],
+    "measured": {
+      "free_floor_pct": 100,
+      "total_price": {
+        "amount_cents": 0,
+        "currency": "USD"
+      }
+    }
+  }
+}
