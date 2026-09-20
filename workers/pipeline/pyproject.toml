@@ -10,9 +10,14 @@ dependencies = [
     "shapely>=2.0",
     "opencv-python-headless>=4.10",
     "trimesh>=4.5",
+    # Polygon triangulation for the shell mesh. trimesh needs an engine for
+    # `extrude_polygon`, and earcut is the permissively licensed one (the
+    # alternative, `triangle`, is not FSF-approved and 1.2 forbids shipping it).
+    "mapbox-earcut>=1.0",
     "pygltflib>=1.16",
     "imageio-ffmpeg>=0.5",
     "pydantic>=2.9",
+    "rtree>=1.4.1",
 ]
 
 [build-system]

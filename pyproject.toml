@@ -68,6 +68,15 @@ exclude = "workers/schemas_py/roomfittr_schemas/"
 module = "imageio_ffmpeg"
 ignore_missing_imports = true
 
+# trimesh ships no py.typed marker, so mypy reads its source and reports every
+# call into it as "untyped function in typed context". Its annotations are
+# incomplete and not intended for consumers; treating the package as Any is the
+# honest description, and our own wrappers around it are annotated.
+[[tool.mypy.overrides]]
+module = "trimesh.*"
+follow_imports = "skip"
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 testpaths = ["workers", "eval"]
 pythonpath = ["."]
