@@ -685,6 +685,22 @@ def solve(
                 failure = _failure_reason(slot, analysis)
 
         if not next_beams:
+            # 7.4 draws a line between two failures that look alike. A slot
+            # with an empty shortlist is a *catalog* problem -- "catalog too
+            # thin for a category -> skip the slot with an explanation" --
+            # and failing the whole layout over it would mean an empty
+            # catalog produces no room at all rather than an empty one. A
+            # slot whose products exist but do not fit is the *room* problem,
+            # and that is what may fail a `must`.
+            if not slot.candidates:
+                dropped.append(
+                    DroppedSlot(
+                        slot_id=slot.slot_id,
+                        category=slot.category,
+                        reason=_failure_reason(slot, analysis),
+                    )
+                )
+                continue
             if slot.priority == "must":
                 # 7.4: the whole layout fails rather than quietly shipping a
                 # bedroom with no bed.
