@@ -31,6 +31,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # S1/S2 shell out to ffmpeg and ffprobe, and their tests synthesise real
+      # clips. Installed explicitly rather than relying on the runner image:
+      # what it ships has changed between Ubuntu versions, and the dev fallback
+      # in `ingest._resolve` downloads a build at test time, which is not
+      # something CI should depend on.
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true

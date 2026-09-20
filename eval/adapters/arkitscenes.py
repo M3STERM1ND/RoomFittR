@@ -97,10 +97,11 @@ def axis_angle_to_matrix(axis_angle: np.ndarray) -> np.ndarray:
     theta = float(np.linalg.norm(axis_angle))
     if theta < 1e-12:
         return np.eye(3)
-    k = axis_angle / theta
-    kx, ky, kz = k
-    K = np.array([[0.0, -kz, ky], [kz, 0.0, -kx], [-ky, kx, 0.0]])
-    return np.eye(3) + math.sin(theta) * K + (1.0 - math.cos(theta)) * (K @ K)
+    kx, ky, kz = (axis_angle / theta).astype(np.float64)
+    K = np.array([[0.0, -kz, ky], [kz, 0.0, -kx], [-ky, kx, 0.0]], dtype=np.float64)
+    rotation: np.ndarray = np.eye(3, dtype=np.float64) + math.sin(theta) * K
+    rotation += (1.0 - math.cos(theta)) * (K @ K)
+    return rotation
 
 
 def read_traj(path: Path) -> dict[str, np.ndarray]:
@@ -177,8 +178,9 @@ def backproject(
     u = grid_u[valid].astype(float)
     v = grid_v[valid].astype(float)
 
-    cam = np.stack([(u - cx) * z / fx, (v - cy) * z / fy, z], axis=1)
-    world = cam @ cam_to_world[:3, :3].T + cam_to_world[:3, 3] * METRES_TO_MM
+    cam = np.stack([(u - cx) * z / fx, (v - cy) * z / fy, z], axis=1).astype(np.float64)
+    pose = cam_to_world.astype(np.float64)
+    world: np.ndarray = cam @ pose[:3, :3].T + pose[:3, 3] * METRES_TO_MM
     return world
 
 
@@ -349,7 +351,8 @@ def fuse_scene(
 
     # Rotate into the y-up frame the geometry helpers expect. See detect_up.
     axis, sign = detect_up(scene, poses, points)
-    return points @ alignment_matrix(axis, sign).T
+    aligned: np.ndarray = points.astype(np.float64) @ alignment_matrix(axis, sign).T
+    return aligned
 
 
 def nearest_pose(
