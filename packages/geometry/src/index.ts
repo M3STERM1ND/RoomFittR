@@ -9,5 +9,6 @@
 
 export * from "./geometry.ts";
 export * from "./room.ts";
+export * from "./placer.ts";
 export * from "./rules.ts";
 export * from "./validator.ts";
