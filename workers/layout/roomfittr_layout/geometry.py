@@ -78,19 +78,23 @@ class Footprint:
 
         Local axes before rotation: width along X, depth along Z, and the
         item's **front is -Z** (2.4).
+
+        Written as one small matrix product rather than four calls to
+        `rotate_xz`: the solver evaluates thousands of candidate poses and
+        this was the single hottest line in the profile.
         """
         half_w, half_d = self.width_mm / 2.0, self.depth_mm / 2.0
-        local = [(-half_w, -half_d), (half_w, -half_d), (half_w, half_d), (-half_w, half_d)]
-        return np.array(
-            [
-                [
-                    self.center_x_mm + rotate_xz(x, z, self.rotation_deg)[0],
-                    self.center_z_mm + rotate_xz(x, z, self.rotation_deg)[1],
-                ]
-                for x, z in local
-            ],
+        local = np.array(
+            [[-half_w, -half_d], [half_w, -half_d], [half_w, half_d], [-half_w, half_d]],
             dtype=np.float64,
         )
+        angle = math.radians(self.rotation_deg)
+        cos, sin = math.cos(angle), math.sin(angle)
+        # Right-handed about +Y; see the module docstring for the sign.
+        rotation = np.array([[cos, -sin], [sin, cos]], dtype=np.float64)
+        offset = np.array([self.center_x_mm, self.center_z_mm], dtype=np.float64)
+        placed: NDArray[np.float64] = (local @ rotation) + offset
+        return placed
 
     def polygon(self) -> Polygon:
         return Polygon(self.corners())
@@ -166,7 +170,17 @@ def protrusion(footprint: Footprint, room: Polygon) -> float:
     Measured from the worst corner, because a corner is a point and a point's
     distance to the boundary it escaped is exactly the number the user should
     read ("the bookshelf is 40 mm into the wall").
+
+    The early `covers` is not a micro-optimisation. The solver calls this on
+    every candidate pose and almost all of them are inside the room, so the
+    fast path is the only path that runs at scale: one polygon test instead
+    of four point constructions and four distance queries. It measured as
+    the single largest cost in generating a layout.
     """
+    shape = footprint.polygon()
+    if room.covers(shape):
+        return 0.0
+
     worst = 0.0
     for x, z in footprint.corners():
         point = Point(float(x), float(z))
