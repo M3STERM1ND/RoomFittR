@@ -117,7 +117,7 @@ captures:
 - capture_id: gt-007-a
   device: iPad Pro (ARKitScenes capture)
   style: careful
-  file: captures/gt-tmp-a.mov
+  file: captures/gt-007-a.mov
   note: copy or symlink from D:/arkitscenes/raw/Training/43828231/43828231.mov
 notes: 'Tier A ground truth: derived from ARKitScenes'' FARO laser depth, not measured
   by hand. openings is empty on purpose -- ARKitScenes annotates 17 furniture classes
