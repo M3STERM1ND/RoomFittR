@@ -39,3 +39,6 @@ eval/runs/*
 .DS_Store
 Thumbs.db
 .vercel
+
+# Sentry Config File
+.env.sentry-build-plugin
