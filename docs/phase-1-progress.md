@@ -4,11 +4,15 @@ Live status for `implementation-plan.md` §8 Phase 1 (Video → 3D Room Proof of
 Concept — **the gate**). Updated as work lands. **If work stopped partway, the
 "Stopped at" line below is the resume point.**
 
-**Stopped at:** _**Blocked on infrastructure, 2026-09-20.** Every CPU stage of
+**Stopped at:** _**Blocked on a GPU and on R2, 2026-09-20.** Every CPU stage of
 the pipeline is built and tested (S1, S2, S5, S6, S7, S8, S9, plus the S3/S4
-adapter contract). The gate itself — E1–E8 — cannot be run here: it needs a
-GPU, the two gated Hugging Face checkpoints, a Modal workspace and the
-ARKitScenes video assets, none of which exist on this machine. See
+adapter contract). Since this was last written, three of the four blockers have
+cleared on this machine: the **Modal workspace exists** (`tejas-15913`, `main` +
+`dev`, `roomfittr-hf` secret in both), the **Hugging Face token is present and
+its gated approvals verified** by an authenticated download, and **all 13 Tier A
+`.mov` inputs are in place and verified** (§"Tier A capture inputs"). What
+remains is a GPU to run E1–E8 on and an R2 bucket to write artefacts to — R2
+is the only outstanding infrastructure item, Sentry having landed too. See
 §"What only you can do"._
 
 ---
@@ -29,7 +33,7 @@ Tasks are numbered as in §8 Phase 1.
 | 8 | S7 scale fusion (E2, E3) | **done** | `scale.py`. Weighted median over model/mono/door/ceiling/user sources, outlier rejection, confidence from the spread between sources. |
 | 9 | S8 minimal shell (Tier 0) → GLB | **done** | `shell.py`. Floor, ceiling, walls with opening cutouts, window glass, exported as binary glTF in metres. Asserted far inside §9.2's 3 MB budget. |
 | 10 | Debug viewer (three.js, point cloud + RoomModel + shell) | **not started** | Needs R2 to load artefacts from, and there are no real artefacts to look at until a reconstruction runs. |
-| 11 | Run the bake-off E1–E8, write `eval/reports/phase1.md`, make the go/no-go call | **blocked** | This is the gate. Needs tasks 2, 3, 4 and the dataset. |
+| 11 | Run the bake-off E1–E8, write `eval/reports/phase1.md`, make the go/no-go call | **blocked** | This is the gate. The dataset is now in place (§"Tier A capture inputs"); still needs tasks 2, 3, 4, a GPU, and a decision on the §3.2 size limit. |
 
 Status values: `not started` · `in progress` · `done` · `contract only — blocked` · `blocked`
 
@@ -119,33 +123,112 @@ measurement on real captures.
 These are the blockers, in the order they unblock things.
 
 1. **Infrastructure accounts** (§8: "Phase 1 opens by doing the infrastructure
-   setup moved out of Phase 0"). The runbook is written and waiting in
-   [`infrastructure-setup.md`](./infrastructure-setup.md): Modal workspace, R2
-   dev/prod buckets, Sentry. Modal needs a card. Supabase is not needed until
-   Phase 5.
+   setup moved out of Phase 0"), per
+   [`infrastructure-setup.md`](./infrastructure-setup.md). **Modal is done**
+   (2026-09-20): workspace `tejas-15913`, `main` + `dev` environments,
+   `roomfittr-hf` secret in both, tokens in `.env.local`. Note the TLS
+   workaround recorded in that runbook — AVG's HTTPS interception breaks the
+   Modal client until its root is added to certifi, and `uv tool upgrade modal`
+   undoes the fix. **Sentry is also done** (2026-09-20): org `roomfittr`, both
+   projects created, all six variables in `.env.local`, verified by a real
+   source-map upload and a live event to each DSN. **Still outstanding: R2
+   dev/prod buckets**, which is now the only infrastructure item left and the
+   one that blocks the pipeline, since it has nowhere to write artefacts
+   without it. Supabase is not needed until Phase 5. Two settings remain unset:
+   a **spend limit** at modal.com/settings/usage, and Sentry's **server-side
+   data scrubber**.
 2. **A GPU.** This machine has no NVIDIA GPU (`nvidia-smi` is not installed;
    it is a Windows 10 laptop). §3.9 wants a 48 GB L40S or 80 GB A100 per job,
    which is what the Modal account is for. D15 ("local GPU for development")
    resolves to *no* on this machine.
-3. **The Hugging Face token.** `phase-0-progress.md` records `HF_TOKEN` as
-   being in `.env.local`, but **there is no `.env.local` in this working
-   copy** — only `.env.example`. The gated checkpoints
-   (`facebook/VGGT-1B-Commercial`, `facebook/sam3`) were approved on
-   2026-09-19, so this is a matter of restoring the file, not re-requesting
-   access.
-4. **The ARKitScenes video assets.** `eval/captures/` does not exist here. The
-   13 converted ground-truth files are committed and valid, but the `.mov`
-   inputs they pair with are not (they are gitignored, correctly — they are
-   large and not source). Phase 0's own notes flag this: of the scenes
-   checked, one had ground truth but no `.mov`, one had the `.mov` but no
-   depth, and one directory was empty. Follow
-   [`eval/TIER_A_GUIDE.md`](../eval/TIER_A_GUIDE.md) to re-pull all five asset
-   types per scene.
+3. ~~**The Hugging Face token.**~~ **Resolved 2026-09-20.** `.env.local` exists
+   on this machine and `HF_TOKEN` is present. Both gated checkpoints were
+   verified by authenticated fetch, not just by the approval page:
+   `facebook/VGGT-1B-Commercial` and `facebook/sam3` both return HTTP 200 on a
+   file download with this token (a `read` token on account `hungwa`). The
+   token is also loaded into the `roomfittr-hf` Modal secret in `main` and
+   `dev`, so the worker image can reach the weights at build time.
+4. ~~**The ARKitScenes video assets.**~~ **Resolved 2026-09-20** — see
+   §"Tier A capture inputs" for the verification. All 13 `.mov` files are in
+   `eval/captures/`, hardlinked to `D:/arkitscenes/raw/Training/`, and each one
+   is confirmed to be the *same inode* as its scene's source file, which is
+   identity rather than a size comparison. They remain gitignored, correctly.
 
 Nothing in this list can be worked around from inside the repository, and none
 of it is a judgement call — it is access, hardware and a card.
 
 ---
+
+---
+
+## Tier A capture inputs
+
+Verified 2026-09-20. All 13 selected ARKitScenes scenes have their `.mov` in
+`eval/captures/`; **nothing needed downloading**, and the scenes were already
+present under `D:/arkitscenes/raw/Training/` (38 scenes, 32 GB, of which these
+13 are the selected subset).
+
+| room | scene_id | duration | display | codec | rot | MB |
+|---|---|---|---|---|---|---|
+| gt-001 | 41048223 | 96.1 s | 1440×1920 | hevc | 90 | 842 |
+| gt-002 | 41048225 | 127.3 s | 1440×1920 | hevc | 90 | 1115 |
+| gt-003 | 41048229 | 93.6 s | 1440×1920 | hevc | 90 | 821 |
+| gt-004 | 42444477 | 168.7 s | 1920×1440 | hevc | 0 | 1480 |
+| gt-005 | 42898342 | 47.8 s | 1920×1440 | hevc | 0 | 421 |
+| gt-006 | 42898745 | 98.5 s | 1920×1440 | hevc | 0 | 864 |
+| gt-007 | 43828231 | 144.6 s | 1440×1920 | hevc | 90 | 1268 |
+| gt-008 | 44358360 | 78.5 s | 1920×1440 | hevc | 180 | 689 |
+| gt-009 | 45261292 | 61.6 s | 1920×1440 | hevc | 0 | 540 |
+| gt-010 | 45663347 | 197.1 s | 1920×1440 | hevc | 180 | 1729 |
+| gt-011 | 47331686 | 91.1 s | 1920×1440 | hevc | 0 | 799 |
+| gt-012 | 47332705 | 37.8 s | 1920×1440 | hevc | 0 | 332 |
+| gt-013 | 47332764 | 120.0 s | 1920×1440 | hevc | 0 | 1052 |
+
+**11.95 GB logical, 0 bytes additional.** Every file is a hardlink to the
+ARKitScenes copy, so the two paths share one set of blocks. `ingest.probe()`
+reads all 13 — they are real, undamaged HEVC, all at 60 fps, and none carries
+an audio track.
+
+Three findings, in descending order of how much they matter.
+
+**1. Nine of the 13 exceed the §3.2 upload limit, so `ingest.validate()`
+rejects them.** `MAX_BYTES` is 750 MB; these captures run 332–1729 MB because
+ARKitScenes records at roughly 70 Mbit/s, far above what a phone upload
+produces for the same duration. Only gt-005, gt-008, gt-009 and gt-012 pass.
+This is not a broken limit and not broken data — it is the product's
+*user-upload* contract being applied to *evaluation* input, which is a
+different thing. **It needs a decision before E1–E8 can run on the full set**,
+and the options are not equivalent:
+
+- Have the eval harness call `probe()` and skip `validate()`, on the grounds
+  that the size cap exists to bound what a user can upload, not what the
+  reconstruction can read. Cheapest, and keeps the eval measuring the pipeline
+  rather than the upload gate.
+- Transcode the captures down to a phone-like bitrate first. More faithful to
+  what production will actually see — a real upload is re-encoded by the phone
+  — but it changes the pixels the gate is measured on, which makes E1's
+  numbers harder to attribute.
+- Raise `MAX_BYTES`. Worst of the three: it changes a product limit to suit a
+  test fixture.
+
+Left undecided deliberately; whoever runs the bake-off should pick and record
+the choice in `eval/reports/phase1.md`.
+
+**2. Every ground-truth file pointed at a capture that does not exist.** All 13
+carried `file: captures/gt-tmp-a.mov` — a placeholder from a batch run where
+`room_id` and `capture_id` were patched afterwards and `file` was missed. The
+adapter has always emitted the right value
+([`arkitscenes.py`](../eval/adapters/arkitscenes.py) line 469) and its unit test
+asserts `captures/gt-001-a.mov`, so nothing caught the drift between what the
+adapter produces and what was committed. Fixed in place; all 54 eval tests pass.
+Worth noting the shape, because it is the same one the rest of this file keeps
+recording: a generated file edited by hand, where the generator and the artefact
+then disagree in a way no structural check looks at.
+
+**3. `ffprobe` was not resolvable on this machine.** The dev dependency group
+was not installed, so `static-ffmpeg` — the Windows fallback in
+`ingest._resolve` — was absent and every probe raised `INTERNAL`. `uv sync`
+fixes it; the binaries land in `.venv/` on D:.
 
 ## What Phase 2 should know
 

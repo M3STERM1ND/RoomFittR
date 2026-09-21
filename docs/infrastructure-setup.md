@@ -153,6 +153,30 @@ rooms/{room_id}/scans/{scan_id}/{pipeline_version}/{stage}/…
    gated (see [`model-licenses.md`](./model-licenses.md)). Request access now; approval is
    automatic but not instant, and the failure otherwise happens at image-build time.
 
+**TLS interception (this machine).** AVG Antivirus's "Web/Mail Shield" re-signs HTTPS with its
+own root, so anything that pins its own CA bundle fails with a certificate error rather than a
+network one. Two separate workarounds are needed, because they read different trust stores:
+
+- `uv` — pass `--system-certs` (the same reason [`pyproject.toml`](../pyproject.toml) sets
+  `system-certs = true`).
+- `modal` — grpclib hardcodes `cafile = certifi.where()`, and an explicit `cafile` makes Python
+  **ignore `SSL_CERT_FILE`**, so setting that env var does nothing. The AVG root has to be
+  appended to certifi's own `cacert.pem` inside the tool venv
+  (`D:\dev\uv\tools\modal\Lib\site-packages\certifi\cacert.pem`; the root is exported to
+  `D:\dev\certs\avg-root.pem` and a `.orig` backup sits beside the bundle).
+
+  The symptom is `Could not connect to the Modal server`, retried 16 times with no cause shown.
+  **`uv tool upgrade modal` replaces the venv and undoes this** — reapply after any upgrade.
+
+**Cost posture (set 2026-09-20): spend limit $0, usage limit $30.** The two are different
+controls and only one of them protects the card. The **usage limit** caps total usage
+*including* the free credits, so on its own it does not prevent a charge. The **spend limit**
+caps net out-of-pocket *after* credits are exhausted, and at $0 Modal stops every workspace
+workload rather than billing. The consequence to plan around: a job running when usage crosses
+$30 is killed mid-flight rather than allowed to finish, so **E7's profiling sweep cannot
+complete inside one month's credits** and will need either a raised limit on the day or a run
+split across billing cycles (see the budget note in section 3 above).
+
 **Produces:** `MODAL_TOKEN_ID`, `MODAL_TOKEN_SECRET`, `MODAL_ENVIRONMENT`.
 Generate `MODAL_DISPATCH_SECRET` yourself: `openssl rand -hex 32`.
 
@@ -174,8 +198,47 @@ Generate `MODAL_DISPATCH_SECRET` yourself: `openssl rand -hex 32`.
    a breadcrumb is a privacy incident. Enable server-side data scrubbing and make sure no
    presigned URL is attached to an event.
 
+**The Next.js wiring is already in place** (`apps/web/`: `instrumentation.ts`,
+`instrumentation-client.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`, and
+`withSentryConfig` in `next.config.ts`). It reads `NEXT_PUBLIC_SENTRY_DSN` from the
+environment and disables itself when that is unset, so the app builds and runs with no Sentry
+account at all. Four deliberate departures from what `npx @sentry/wizard` generates:
+
+- **DSN from the environment, never inlined.** The wizard hardcodes it into all three config
+  files, which puts a prod credential in the repo and makes dev and prod indistinguishable.
+- **Session Replay off.** The wizard enables it at a 10% session rate. Replay records the DOM,
+  and this app's DOM is a reconstruction of the inside of someone's home plus its dimensions.
+  Step 5 above rules that out; re-enable only with explicit masking and a recorded decision.
+- **`userInfo: false`, `httpBodies: []`, `sendDefaultPii: false`.** The wizard leaves all three
+  at their sending defaults.
+- **`tracesSampleRate` 0.1 in production, 1 in dev.** The wizard sets 1 everywhere, which
+  exhausts the free tier as soon as there is traffic. The **ad-blocker tunnel route is also
+  off**, because it routes event traffic through the same functions that serve scans.
+
+**Still missing:** the Python side. `roomfittr-workers` has no `sentry-sdk` wired into
+`workers/`; that is Phase 5 (productionize) work, and `SENTRY_DSN` is staged for it.
+
 **Produces:** `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_DSN`, `SENTRY_ENVIRONMENT`,
 `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`.
+
+**Privacy settings are org-level, not per-project** (set 2026-09-20): Require Data Scrubber,
+Require Using Default Scrubbers, and Prevent Storing of IP Addresses are all on at
+**Settings → Security & Privacy**. Org settings override project settings in Sentry, so this
+covers `roomfittr-web` and `roomfittr-workers` together and stops the two drifting apart.
+Storing IP addresses is the one that matters most here: an IP sitting beside a 3D scan of
+someone's home is an identifier attached to the inside of their house.
+
+**Verified 2026-09-20**, not just filled in. `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` and
+`SENTRY_PROJECT` were proven by a production build that uploaded 99 source-map files across
+two artifact bundles and exited 0 — an upload Sentry only accepts if all three are right.
+Both DSNs were proven by posting an event to each project's store endpoint and getting a
+`200` with an event id back: web `4512120000479232`, workers `4512120309088256`. Two
+info-level events tagged `source:infrastructure-setup-verification` exist in those projects
+as a result and can be deleted.
+
+**The project is named `roomfittr`, not `roomfittr-web`** as the convention above says. The
+slug is baked into `SENTRY_PROJECT` and into every uploaded artifact bundle, so renaming it
+means updating that variable and re-uploading; left as-is deliberately.
 
 ---
 
@@ -235,9 +298,9 @@ the only thing that catches a mistake nobody predicted.
 | Supabase prod | ☐ | never | ☐ |
 | R2 dev | ☐ | ☐ | ☐ |
 | R2 prod | ☐ | never | ☐ |
-| Modal workspace | ☐ | ☐ | ☐ |
-| Sentry web | ☐ | ☐ | ☐ |
-| Sentry workers | ☐ | ☐ | ☐ |
-| HF gated access approved | ☑ 2026-09-19 | ☑ | ☐ Phase 1 |
+| Modal workspace | ☑ 2026-09-20 `tejas-15913` | ☑ | ☑ `roomfittr-hf` (main + dev) |
+| Sentry web | ☑ 2026-09-20 `roomfittr` | ☑ | n/a (build-time token) |
+| Sentry workers | ☑ 2026-09-20 | ☑ | ☐ Phase 5 |
+| HF gated access approved | ☑ 2026-09-19 | ☑ | ☑ 2026-09-20 |
 
 Tick these off as you go; `phase-0-progress.md` task 6 closes when the table is full.
