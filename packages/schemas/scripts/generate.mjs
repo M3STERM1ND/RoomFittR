@@ -135,7 +135,16 @@ function generatePy() {
     if (!name.endsWith(".py")) continue;
     // Drop the tool's own comment header so the file opens with our banner.
     // --disable-timestamp already makes its output byte-stable.
+    //
+    // LF first, whatever the platform: datamodel-codegen writes through
+    // Python's text mode, so on Windows every line comes back CRLF while the
+    // repo and this script's own output are LF. Comparing those bytes made
+    // --check report all five Python models stale on a Windows checkout and
+    // none on Linux -- a staleness report that depended on who ran it. It
+    // also has to come before the header strip, whose patterns are anchored
+    // on \n.
     const body = readFileSync(join(tmp, name), "utf8")
+      .replace(/\r\n/g, "\n")
       .replace(/^(?:#[^\n]*\n)+/, "")
       .replace(/^\n+/, "");
     out[name] = PY_BANNER + body;
@@ -174,7 +183,12 @@ function emit(dir, files, exts) {
 
   for (const [name, content] of Object.entries(files)) {
     const path = join(dir, name);
-    const existing = existsSync(path) ? readFileSync(path, "utf8") : null;
+    // Normalised for the same reason as the generated body above: a checkout
+    // without .gitattributes, or an editor that rewrote the file, must not
+    // read as a content change.
+    const existing = existsSync(path)
+      ? readFileSync(path, "utf8").replace(/\r\n/g, "\n")
+      : null;
     if (existing !== content) {
       stale.push(path);
       if (!check) writeFileSync(path, content);

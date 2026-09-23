@@ -25,9 +25,15 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
       - run: pnpm lint
+      # Build before typecheck, not after. apps/web's tsconfig includes
+      # `.next/types/**/*.ts`, and those are written by `next build` -- so on
+      # a clean checkout `tsc --noEmit` cannot resolve the types Next
+      # generates for each route (`LayoutProps`, `PageProps`) and fails on
+      # the app's own layout. Ordering it the other way means the TypeScript
+      # job can only pass on a machine that happens to have built already.
+      - run: pnpm build
       - run: pnpm typecheck
       - run: pnpm test
-      - run: pnpm build
 
   python:
     name: Python

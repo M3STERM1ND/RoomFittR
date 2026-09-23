@@ -1,0 +1,43 @@
+# Line endings are LF in the repository, on every platform.
+#
+# Without this file, a clone made on Windows with core.autocrlf=true commits
+# CRLF, and two CI jobs fail in ways that look like content problems and are
+# not:
+#
+#   - `prettier --check` defaults to endOfLine "lf" and flags every file.
+#   - `packages/schemas/scripts/generate.mjs --check` compares the generated
+#     text against the file on disk. The generator writes LF, so on a CRLF
+#     checkout every generated file reads as stale no matter what it says.
+#
+# Both are decided by bytes the author never typed, so they are fixed here
+# rather than by weakening either check. Developers on Windows keep working
+# as before -- git converts on checkout only if they ask it to, and nothing
+# in the toolchain needs CRLF.
+* text=auto eol=lf
+
+# Binary, never converted. `text=auto` detects most of these on its own; they
+# are listed because a corrupted checkpoint or capture is expensive to notice
+# and the cost of being explicit is one line each.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.mp4 binary
+*.mov binary
+*.glb binary
+*.gltf binary
+*.ply binary
+*.npy binary
+*.npz binary
+*.pt binary
+*.pth binary
+*.onnx binary
+*.safetensors binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.zip binary
+*.pdf binary

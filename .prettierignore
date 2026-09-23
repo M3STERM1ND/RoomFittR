@@ -14,6 +14,20 @@ uv.lock
 # formatter for this directory.
 fixtures/rooms/*.json
 
+# The Python/TypeScript parity fixtures (9.1), written by
+# roomfittr_layout/parity.py with json.dumps. Same rule as fixtures/rooms
+# above, and the stakes are higher: these are the file-by-file agreement
+# between the two validators, so the generator has to be the only thing that
+# writes them. Reformatting them here would be undone by the next
+# regeneration, and the two would take turns failing CI.
+fixtures/validation/*.json
+
+# Written by eval/adapters/arkitscenes.py -- the ground truth with
+# yaml.safe_dump(sort_keys=False, width=88), and the rejection log alongside
+# it. The key order is meaningful and prettier does not preserve it.
+eval/ground_truth/*.yaml
+eval/.rejected.json
+
 # Simulated pipeline output. These stand in for what the reconstruction
 # pipeline emits, so they are kept in the pipeline's own formatting rather
 # than the repo's.
