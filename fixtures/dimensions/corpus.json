@@ -1,0 +1,1530 @@
+{
+  "note": "Built by fixtures/dimensions/_build.py from the formats implementation-plan.md 4.5 enumerates. NOT the 300+ real strings 4.5 asks for -- those need the crawler, which needs D7-D9. Append real strings here; delete nothing.",
+  "count": 146,
+  "cases": [
+    {
+      "text": "84\"W x 36\"D x 33\"H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u}W x {d}{u}D x {h}{u}H'",
+      "labelled": true
+    },
+    {
+      "text": "W: 84\" D: 36\" H: 33\"",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'W: {w}{u} D: {d}{u} H: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84\" W x 36\" D x 33\" H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u} W x {d}{u} D x {h}{u} H'",
+      "labelled": true
+    },
+    {
+      "text": "Width 84\" Depth 36\" Height 33\"",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'Width {w}{u} Depth {d}{u} Height {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "W84\" D36\" H33\"",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'W{w}{u} D{d}{u} H{h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84\" wide x 36\" deep x 33\" high",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u} wide x {d}{u} deep x {h}{u} high'",
+      "labelled": true
+    },
+    {
+      "text": "Width: 84\", Depth: 36\", Height: 33\"",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'Width: {w}{u}, Depth: {d}{u}, Height: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 inW x 36 inD x 33 inH",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u}W x {d}{u}D x {h}{u}H'",
+      "labelled": true
+    },
+    {
+      "text": "W: 84 in D: 36 in H: 33 in",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'W: {w}{u} D: {d}{u} H: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 in W x 36 in D x 33 in H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u} W x {d}{u} D x {h}{u} H'",
+      "labelled": true
+    },
+    {
+      "text": "Width 84 in Depth 36 in Height 33 in",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'Width {w}{u} Depth {d}{u} Height {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "W84 in D36 in H33 in",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'W{w}{u} D{d}{u} H{h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 in wide x 36 in deep x 33 in high",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u} wide x {d}{u} deep x {h}{u} high'",
+      "labelled": true
+    },
+    {
+      "text": "Width: 84 in, Depth: 36 in, Height: 33 in",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'Width: {w}{u}, Depth: {d}{u}, Height: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 in.W x 36 in.D x 33 in.H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u}W x {d}{u}D x {h}{u}H'",
+      "labelled": true
+    },
+    {
+      "text": "W: 84 in. D: 36 in. H: 33 in.",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'W: {w}{u} D: {d}{u} H: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 in. W x 36 in. D x 33 in. H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u} W x {d}{u} D x {h}{u} H'",
+      "labelled": true
+    },
+    {
+      "text": "Width 84 in. Depth 36 in. Height 33 in.",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'Width {w}{u} Depth {d}{u} Height {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "W84 in. D36 in. H33 in.",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'W{w}{u} D{d}{u} H{h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 in. wide x 36 in. deep x 33 in. high",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u} wide x {d}{u} deep x {h}{u} high'",
+      "labelled": true
+    },
+    {
+      "text": "Width: 84 in., Depth: 36 in., Height: 33 in.",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'Width: {w}{u}, Depth: {d}{u}, Height: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84\" W x 36\" D x 33\" H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u}W x {d}{u}D x {h}{u}H'",
+      "labelled": true
+    },
+    {
+      "text": "W: 84\"  D: 36\"  H: 33\" ",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'W: {w}{u} D: {d}{u} H: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84\"  W x 36\"  D x 33\"  H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u} W x {d}{u} D x {h}{u} H'",
+      "labelled": true
+    },
+    {
+      "text": "Width 84\"  Depth 36\"  Height 33\" ",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'Width {w}{u} Depth {d}{u} Height {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "W84\"  D36\"  H33\" ",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'W{w}{u} D{d}{u} H{h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84\"  wide x 36\"  deep x 33\"  high",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u} wide x {d}{u} deep x {h}{u} high'",
+      "labelled": true
+    },
+    {
+      "text": "Width: 84\" , Depth: 36\" , Height: 33\" ",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'Width: {w}{u}, Depth: {d}{u}, Height: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 inchW x 36 inchD x 33 inchH",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u}W x {d}{u}D x {h}{u}H'",
+      "labelled": true
+    },
+    {
+      "text": "W: 84 inch D: 36 inch H: 33 inch",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'W: {w}{u} D: {d}{u} H: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 inch W x 36 inch D x 33 inch H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u} W x {d}{u} D x {h}{u} H'",
+      "labelled": true
+    },
+    {
+      "text": "Width 84 inch Depth 36 inch Height 33 inch",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'Width {w}{u} Depth {d}{u} Height {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "W84 inch D36 inch H33 inch",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'W{w}{u} D{d}{u} H{h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 inch wide x 36 inch deep x 33 inch high",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u} wide x {d}{u} deep x {h}{u} high'",
+      "labelled": true
+    },
+    {
+      "text": "Width: 84 inch, Depth: 36 inch, Height: 33 inch",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'Width: {w}{u}, Depth: {d}{u}, Height: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 inchesW x 36 inchesD x 33 inchesH",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u}W x {d}{u}D x {h}{u}H'",
+      "labelled": true
+    },
+    {
+      "text": "W: 84 inches D: 36 inches H: 33 inches",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'W: {w}{u} D: {d}{u} H: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 inches W x 36 inches D x 33 inches H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u} W x {d}{u} D x {h}{u} H'",
+      "labelled": true
+    },
+    {
+      "text": "Width 84 inches Depth 36 inches Height 33 inches",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'Width {w}{u} Depth {d}{u} Height {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "W84 inches D36 inches H33 inches",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'W{w}{u} D{d}{u} H{h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 inches wide x 36 inches deep x 33 inches high",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u} wide x {d}{u} deep x {h}{u} high'",
+      "labelled": true
+    },
+    {
+      "text": "Width: 84 inches, Depth: 36 inches, Height: 33 inches",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'Width: {w}{u}, Depth: {d}{u}, Height: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84”W x 36”D x 33”H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u}W x {d}{u}D x {h}{u}H'",
+      "labelled": true
+    },
+    {
+      "text": "W: 84” D: 36” H: 33”",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'W: {w}{u} D: {d}{u} H: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84” W x 36” D x 33” H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u} W x {d}{u} D x {h}{u} H'",
+      "labelled": true
+    },
+    {
+      "text": "Width 84” Depth 36” Height 33”",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'Width {w}{u} Depth {d}{u} Height {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "W84” D36” H33”",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'W{w}{u} D{d}{u} H{h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84” wide x 36” deep x 33” high",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout '{w}{u} wide x {d}{u} deep x {h}{u} high'",
+      "labelled": true
+    },
+    {
+      "text": "Width: 84”, Depth: 36”, Height: 33”",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "labelled in, layout 'Width: {w}{u}, Depth: {d}{u}, Height: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 cmW x 36 cmD x 33 cmH",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout '{w}{u}W x {d}{u}D x {h}{u}H'",
+      "labelled": true
+    },
+    {
+      "text": "W: 84 cm D: 36 cm H: 33 cm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout 'W: {w}{u} D: {d}{u} H: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 cm W x 36 cm D x 33 cm H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout '{w}{u} W x {d}{u} D x {h}{u} H'",
+      "labelled": true
+    },
+    {
+      "text": "Width 84 cm Depth 36 cm Height 33 cm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout 'Width {w}{u} Depth {d}{u} Height {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "W84 cm D36 cm H33 cm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout 'W{w}{u} D{d}{u} H{h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 cm wide x 36 cm deep x 33 cm high",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout '{w}{u} wide x {d}{u} deep x {h}{u} high'",
+      "labelled": true
+    },
+    {
+      "text": "Width: 84 cm, Depth: 36 cm, Height: 33 cm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout 'Width: {w}{u}, Depth: {d}{u}, Height: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84cmW x 36cmD x 33cmH",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout '{w}{u}W x {d}{u}D x {h}{u}H'",
+      "labelled": true
+    },
+    {
+      "text": "W: 84cm D: 36cm H: 33cm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout 'W: {w}{u} D: {d}{u} H: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84cm W x 36cm D x 33cm H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout '{w}{u} W x {d}{u} D x {h}{u} H'",
+      "labelled": true
+    },
+    {
+      "text": "Width 84cm Depth 36cm Height 33cm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout 'Width {w}{u} Depth {d}{u} Height {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "W84cm D36cm H33cm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout 'W{w}{u} D{d}{u} H{h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84cm wide x 36cm deep x 33cm high",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout '{w}{u} wide x {d}{u} deep x {h}{u} high'",
+      "labelled": true
+    },
+    {
+      "text": "Width: 84cm, Depth: 36cm, Height: 33cm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout 'Width: {w}{u}, Depth: {d}{u}, Height: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 cm.W x 36 cm.D x 33 cm.H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout '{w}{u}W x {d}{u}D x {h}{u}H'",
+      "labelled": true
+    },
+    {
+      "text": "W: 84 cm. D: 36 cm. H: 33 cm.",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout 'W: {w}{u} D: {d}{u} H: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 cm. W x 36 cm. D x 33 cm. H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout '{w}{u} W x {d}{u} D x {h}{u} H'",
+      "labelled": true
+    },
+    {
+      "text": "Width 84 cm. Depth 36 cm. Height 33 cm.",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout 'Width {w}{u} Depth {d}{u} Height {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "W84 cm. D36 cm. H33 cm.",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout 'W{w}{u} D{d}{u} H{h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 cm. wide x 36 cm. deep x 33 cm. high",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout '{w}{u} wide x {d}{u} deep x {h}{u} high'",
+      "labelled": true
+    },
+    {
+      "text": "Width: 84 cm., Depth: 36 cm., Height: 33 cm.",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout 'Width: {w}{u}, Depth: {d}{u}, Height: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 centimetresW x 36 centimetresD x 33 centimetresH",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout '{w}{u}W x {d}{u}D x {h}{u}H'",
+      "labelled": true
+    },
+    {
+      "text": "W: 84 centimetres D: 36 centimetres H: 33 centimetres",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout 'W: {w}{u} D: {d}{u} H: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 centimetres W x 36 centimetres D x 33 centimetres H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout '{w}{u} W x {d}{u} D x {h}{u} H'",
+      "labelled": true
+    },
+    {
+      "text": "Width 84 centimetres Depth 36 centimetres Height 33 centimetres",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout 'Width {w}{u} Depth {d}{u} Height {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "W84 centimetres D36 centimetres H33 centimetres",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout 'W{w}{u} D{d}{u} H{h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 centimetres wide x 36 centimetres deep x 33 centimetres high",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout '{w}{u} wide x {d}{u} deep x {h}{u} high'",
+      "labelled": true
+    },
+    {
+      "text": "Width: 84 centimetres, Depth: 36 centimetres, Height: 33 centimetres",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout 'Width: {w}{u}, Depth: {d}{u}, Height: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 centimetersW x 36 centimetersD x 33 centimetersH",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout '{w}{u}W x {d}{u}D x {h}{u}H'",
+      "labelled": true
+    },
+    {
+      "text": "W: 84 centimeters D: 36 centimeters H: 33 centimeters",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout 'W: {w}{u} D: {d}{u} H: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 centimeters W x 36 centimeters D x 33 centimeters H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout '{w}{u} W x {d}{u} D x {h}{u} H'",
+      "labelled": true
+    },
+    {
+      "text": "Width 84 centimeters Depth 36 centimeters Height 33 centimeters",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout 'Width {w}{u} Depth {d}{u} Height {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "W84 centimeters D36 centimeters H33 centimeters",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout 'W{w}{u} D{d}{u} H{h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 centimeters wide x 36 centimeters deep x 33 centimeters high",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout '{w}{u} wide x {d}{u} deep x {h}{u} high'",
+      "labelled": true
+    },
+    {
+      "text": "Width: 84 centimeters, Depth: 36 centimeters, Height: 33 centimeters",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 840,
+        "depth_mm": 360,
+        "height_mm": 330
+      },
+      "why": "labelled cm, layout 'Width: {w}{u}, Depth: {d}{u}, Height: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 mmW x 36 mmD x 33 mmH",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 84,
+        "depth_mm": 36,
+        "height_mm": 33
+      },
+      "why": "labelled mm, layout '{w}{u}W x {d}{u}D x {h}{u}H'",
+      "labelled": true
+    },
+    {
+      "text": "W: 84 mm D: 36 mm H: 33 mm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 84,
+        "depth_mm": 36,
+        "height_mm": 33
+      },
+      "why": "labelled mm, layout 'W: {w}{u} D: {d}{u} H: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 mm W x 36 mm D x 33 mm H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 84,
+        "depth_mm": 36,
+        "height_mm": 33
+      },
+      "why": "labelled mm, layout '{w}{u} W x {d}{u} D x {h}{u} H'",
+      "labelled": true
+    },
+    {
+      "text": "Width 84 mm Depth 36 mm Height 33 mm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 84,
+        "depth_mm": 36,
+        "height_mm": 33
+      },
+      "why": "labelled mm, layout 'Width {w}{u} Depth {d}{u} Height {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "W84 mm D36 mm H33 mm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 84,
+        "depth_mm": 36,
+        "height_mm": 33
+      },
+      "why": "labelled mm, layout 'W{w}{u} D{d}{u} H{h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 mm wide x 36 mm deep x 33 mm high",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 84,
+        "depth_mm": 36,
+        "height_mm": 33
+      },
+      "why": "labelled mm, layout '{w}{u} wide x {d}{u} deep x {h}{u} high'",
+      "labelled": true
+    },
+    {
+      "text": "Width: 84 mm, Depth: 36 mm, Height: 33 mm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 84,
+        "depth_mm": 36,
+        "height_mm": 33
+      },
+      "why": "labelled mm, layout 'Width: {w}{u}, Depth: {d}{u}, Height: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84mmW x 36mmD x 33mmH",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 84,
+        "depth_mm": 36,
+        "height_mm": 33
+      },
+      "why": "labelled mm, layout '{w}{u}W x {d}{u}D x {h}{u}H'",
+      "labelled": true
+    },
+    {
+      "text": "W: 84mm D: 36mm H: 33mm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 84,
+        "depth_mm": 36,
+        "height_mm": 33
+      },
+      "why": "labelled mm, layout 'W: {w}{u} D: {d}{u} H: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84mm W x 36mm D x 33mm H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 84,
+        "depth_mm": 36,
+        "height_mm": 33
+      },
+      "why": "labelled mm, layout '{w}{u} W x {d}{u} D x {h}{u} H'",
+      "labelled": true
+    },
+    {
+      "text": "Width 84mm Depth 36mm Height 33mm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 84,
+        "depth_mm": 36,
+        "height_mm": 33
+      },
+      "why": "labelled mm, layout 'Width {w}{u} Depth {d}{u} Height {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "W84mm D36mm H33mm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 84,
+        "depth_mm": 36,
+        "height_mm": 33
+      },
+      "why": "labelled mm, layout 'W{w}{u} D{d}{u} H{h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84mm wide x 36mm deep x 33mm high",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 84,
+        "depth_mm": 36,
+        "height_mm": 33
+      },
+      "why": "labelled mm, layout '{w}{u} wide x {d}{u} deep x {h}{u} high'",
+      "labelled": true
+    },
+    {
+      "text": "Width: 84mm, Depth: 36mm, Height: 33mm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 84,
+        "depth_mm": 36,
+        "height_mm": 33
+      },
+      "why": "labelled mm, layout 'Width: {w}{u}, Depth: {d}{u}, Height: {h}{u}'",
+      "labelled": true
+    },
+    {
+      "text": "84 × 36 × 33\"",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "multiplication sign instead of the letter x",
+      "labelled": false
+    },
+    {
+      "text": "213 x 91 x 84 cm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2130,
+        "depth_mm": 910,
+        "height_mm": 840
+      },
+      "why": "unlabelled triple read as wdh",
+      "labelled": false
+    },
+    {
+      "text": "213 x 91 x 84 cm",
+      "convention": "lwh",
+      "expect": {
+        "width_mm": 2130,
+        "depth_mm": 910,
+        "height_mm": 840
+      },
+      "why": "unlabelled triple read as lwh",
+      "labelled": false
+    },
+    {
+      "text": "213 x 91 x 84 cm",
+      "convention": "whd",
+      "expect": {
+        "width_mm": 2130,
+        "height_mm": 910,
+        "depth_mm": 840
+      },
+      "why": "unlabelled triple read as whd",
+      "labelled": false
+    },
+    {
+      "text": "213 x 91 x 84 cm",
+      "convention": "dwh",
+      "expect": {
+        "depth_mm": 2130,
+        "width_mm": 910,
+        "height_mm": 840
+      },
+      "why": "unlabelled triple read as dwh",
+      "labelled": false
+    },
+    {
+      "text": "213 × 91 × 84 cm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2130,
+        "depth_mm": 910,
+        "height_mm": 840
+      },
+      "why": "multiplication sign instead of the letter x",
+      "labelled": false
+    },
+    {
+      "text": "213 x 91 x 84 mm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 213,
+        "depth_mm": 91,
+        "height_mm": 84
+      },
+      "why": "unlabelled triple read as wdh",
+      "labelled": false
+    },
+    {
+      "text": "213 x 91 x 84 mm",
+      "convention": "lwh",
+      "expect": {
+        "width_mm": 213,
+        "depth_mm": 91,
+        "height_mm": 84
+      },
+      "why": "unlabelled triple read as lwh",
+      "labelled": false
+    },
+    {
+      "text": "213 x 91 x 84 mm",
+      "convention": "whd",
+      "expect": {
+        "width_mm": 213,
+        "height_mm": 91,
+        "depth_mm": 84
+      },
+      "why": "unlabelled triple read as whd",
+      "labelled": false
+    },
+    {
+      "text": "213 x 91 x 84 mm",
+      "convention": "dwh",
+      "expect": {
+        "depth_mm": 213,
+        "width_mm": 91,
+        "height_mm": 84
+      },
+      "why": "unlabelled triple read as dwh",
+      "labelled": false
+    },
+    {
+      "text": "213 × 91 × 84 mm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 213,
+        "depth_mm": 91,
+        "height_mm": 84
+      },
+      "why": "multiplication sign instead of the letter x",
+      "labelled": false
+    },
+    {
+      "text": "33 1/2\"W x 20\"D x 30\"H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 851,
+        "depth_mm": 508,
+        "height_mm": 762
+      },
+      "why": "ascii fraction",
+      "labelled": true
+    },
+    {
+      "text": "33½\" W x 20\" D x 30\" H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 851,
+        "depth_mm": 508,
+        "height_mm": 762
+      },
+      "why": "vulgar fraction, which NFKC would otherwise turn into 331/2",
+      "labelled": true
+    },
+    {
+      "text": "33¼\" W x 20\" D x 30\" H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 845,
+        "depth_mm": 508,
+        "height_mm": 762
+      },
+      "why": "quarter fraction",
+      "labelled": true
+    },
+    {
+      "text": "33¾\" W x 20\" D x 30\" H",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 857,
+        "depth_mm": 508,
+        "height_mm": 762
+      },
+      "why": "three-quarter fraction",
+      "labelled": true
+    },
+    {
+      "text": "213,5 x 91 x 84 cm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2135,
+        "depth_mm": 910,
+        "height_mm": 840
+      },
+      "why": "european decimal comma",
+      "labelled": false
+    },
+    {
+      "text": "213.5 x 91 x 84 cm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2135,
+        "depth_mm": 910,
+        "height_mm": 840
+      },
+      "why": "decimal point",
+      "labelled": false
+    },
+    {
+      "text": "W 213,5 cm D 91,5 cm H 84,5 cm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2135,
+        "depth_mm": 915,
+        "height_mm": 845
+      },
+      "why": "decimal comma on every axis",
+      "labelled": true
+    },
+    {
+      "text": "7' 0\" x 3' 0\" x 2' 9\"",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "feet and inches; the inches must not read as a fourth dimension",
+      "labelled": false
+    },
+    {
+      "text": "7 ft 6 in x 3 ft 0 in x 2 ft 6 in",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2286,
+        "depth_mm": 914,
+        "height_mm": 762
+      },
+      "why": "feet and inches spelled out",
+      "labelled": false
+    },
+    {
+      "text": "W 7' 0\" D 3' 0\" H 2' 6\"",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 762
+      },
+      "why": "labelled feet and inches",
+      "labelled": true
+    },
+    {
+      "text": "8' x 10'",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2438,
+        "depth_mm": 3048,
+        "height_mm": 10
+      },
+      "why": "rug in feet; height defaults to 10 mm",
+      "is_rug": true,
+      "labelled": false
+    },
+    {
+      "text": "160 x 230 cm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 1600,
+        "depth_mm": 2300,
+        "height_mm": 10
+      },
+      "why": "rug in centimetres",
+      "is_rug": true,
+      "labelled": false
+    },
+    {
+      "text": "W 160 cm x L 230 cm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 1600,
+        "depth_mm": 2300,
+        "height_mm": 10
+      },
+      "why": "rug with width and length labelled",
+      "is_rug": true,
+      "labelled": true
+    },
+    {
+      "text": "160 x 230 cm",
+      "convention": "wdh",
+      "expect": null,
+      "why": "the same string is not a dimension set for a non-rug: only two numbers"
+    },
+    {
+      "text": "Diameter 36\" Height 29\"",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 914,
+        "depth_mm": 914,
+        "height_mm": 737
+      },
+      "why": "diameter sets width and depth alike",
+      "labelled": true
+    },
+    {
+      "text": "Ø 120 cm, H 75 cm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 1200,
+        "depth_mm": 1200,
+        "height_mm": 750
+      },
+      "why": "diameter sign",
+      "labelled": true
+    },
+    {
+      "text": "Dia. 90 cm H 45 cm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 900,
+        "depth_mm": 900,
+        "height_mm": 450
+      },
+      "why": "abbreviated diameter",
+      "labelled": true
+    },
+    {
+      "text": "Overall: 84\"W x 36\"D x 33\"H; Seat height: 19\"",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "overall wins over a component measurement",
+      "labelled": true
+    },
+    {
+      "text": "Packaged: 90 x 40 x 38 in; Overall: 84 x 36 x 33 in",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "packaged is discarded even though it comes first",
+      "labelled": false
+    },
+    {
+      "text": "Assembled: 213 x 91 x 84 cm | Carton: 220 x 95 x 90 cm",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2130,
+        "depth_mm": 910,
+        "height_mm": 840
+      },
+      "why": "assembled wins over carton",
+      "labelled": false
+    },
+    {
+      "text": "Shipping dimensions: 90 x 40 x 38 in",
+      "convention": "wdh",
+      "expect": null,
+      "why": "the only set on offer is the one 4.5 says to discard"
+    },
+    {
+      "text": "Box size: 220 x 95 x 90 cm",
+      "convention": "wdh",
+      "expect": null,
+      "why": "box is discarded; nothing else to fall back to"
+    },
+    {
+      "text": "Seat: 20\"W x 20\"D x 19\"H",
+      "convention": "wdh",
+      "expect": null,
+      "why": "a seat is not the product, and using it would be R7 with the numbers read correctly"
+    },
+    {
+      "text": "Tabletop: 120 x 60 x 4 cm",
+      "convention": "wdh",
+      "expect": null,
+      "why": "the top is not the table"
+    },
+    {
+      "text": "Overall width 84\" Overall depth 36\" Overall height 33\"",
+      "convention": "wdh",
+      "expect": {
+        "width_mm": 2134,
+        "depth_mm": 914,
+        "height_mm": 838
+      },
+      "why": "overall repeated on each axis",
+      "labelled": true
+    },
+    {
+      "text": "84\" wide",
+      "convention": "wdh",
+      "expect": null,
+      "why": "one dimension is not a set"
+    },
+    {
+      "text": "Approximately 84 inches",
+      "convention": "wdh",
+      "expect": null,
+      "why": "one dimension, in prose"
+    },
+    {
+      "text": "84 x 36",
+      "convention": "wdh",
+      "expect": null,
+      "why": "two numbers and not a rug"
+    },
+    {
+      "text": "213 x 91 x 84",
+      "convention": "wdh",
+      "expect": null,
+      "why": "no unit anywhere, so the numbers mean nothing"
+    },
+    {
+      "text": "",
+      "convention": "wdh",
+      "expect": null,
+      "why": "empty"
+    },
+    {
+      "text": "   ",
+      "convention": "wdh",
+      "expect": null,
+      "why": "blank"
+    },
+    {
+      "text": "Some assembly required",
+      "convention": "wdh",
+      "expect": null,
+      "why": "no numbers at all"
+    },
+    {
+      "text": "Weight: 45 kg",
+      "convention": "wdh",
+      "expect": null,
+      "why": "a measurement, but not of length"
+    },
+    {
+      "text": "W 0.4 cm D 0.3 cm H 0.2 cm",
+      "convention": "wdh",
+      "expect": null,
+      "why": "below the 10 mm floor the products table also enforces; rejected rather than recorded as a 4 mm sofa"
+    },
+    {
+      "text": "W 84 m D 36 m H 33 m",
+      "convention": "wdh",
+      "expect": null,
+      "why": "metres where inches were meant: implausible, so rejected"
+    },
+    {
+      "text": "W 84\" W 92\" D 36\" H 33\"",
+      "convention": "wdh",
+      "expect": null,
+      "why": "two different widths is the 'several sets' case 4.5 hands to the LLM"
+    },
+    {
+      "text": "1,213 x 91 x 84 cm",
+      "convention": "wdh",
+      "expect": null,
+      "why": "a comma with three digits after it is a thousands separator, and 12 metres of sofa is implausible"
+    }
+  ]
+}

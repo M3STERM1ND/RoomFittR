@@ -10,6 +10,7 @@ resolution-markers = [
 [manifest]
 members = [
     "roomfittr",
+    "roomfittr-catalog",
     "roomfittr-layout",
     "roomfittr-pipeline",
     "roomfittr-planner",
@@ -1887,6 +1888,7 @@ dependencies = [
     { name = "plyfile" },
     { name = "pydantic" },
     { name = "pyyaml" },
+    { name = "roomfittr-catalog" },
     { name = "roomfittr-layout" },
     { name = "roomfittr-pipeline" },
     { name = "roomfittr-planner" },
@@ -1916,6 +1918,7 @@ requires-dist = [
     { name = "plyfile", specifier = ">=1.1.5" },
     { name = "pydantic", specifier = ">=2.9" },
     { name = "pyyaml", specifier = ">=6.0" },
+    { name = "roomfittr-catalog", editable = "workers/catalog" },
     { name = "roomfittr-layout", editable = "workers/layout" },
     { name = "roomfittr-pipeline", editable = "workers/pipeline" },
     { name = "roomfittr-planner", editable = "workers/planner" },
@@ -1937,6 +1940,11 @@ dev = [
     { name = "types-pyyaml", specifier = ">=6.0" },
     { name = "types-shapely", specifier = ">=2.1.0.20260728" },
 ]
+
+[[package]]
+name = "roomfittr-catalog"
+version = "0.1.0"
+source = { editable = "workers/catalog" }
 
 [[package]]
 name = "roomfittr-layout"
