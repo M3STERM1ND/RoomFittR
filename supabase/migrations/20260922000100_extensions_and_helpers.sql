@@ -119,13 +119,18 @@ create type public.retailer_status as enum ('active', 'paused', 'disabled');
 create type public.availability as enum (
   'in_stock', 'out_of_stock', 'preorder', 'unknown'
 );
--- 6.3 writes this as `rejected_*`: the reason a product was rejected is part
--- of the state, because 9.3's R7 mitigation watches the reject rate per
--- reason and a single `rejected` value would make that dashboard useless.
+-- 6.3 writes this as `rejected_*` and 4.7's table names each one. The reason
+-- a product was rejected is part of the state, because 9.3's R7 mitigation
+-- watches the reject rate per reason and a single `rejected` value would make
+-- that dashboard useless.
+--
+-- A duplicate gets no status of its own: 6.3 gives it `duplicate_group_id`
+-- and `layout_candidates` offers only the group's representative, so the
+-- other rows stay active and buyable by anyone who has their link.
 create type public.product_status as enum (
   'active', 'pending_review', 'unavailable', 'archived',
-  'rejected_dimensions', 'rejected_category', 'rejected_duplicate',
-  'rejected_policy'
+  'rejected_no_dimensions', 'rejected_implausible_dimensions',
+  'rejected_no_price', 'rejected_bad_link', 'rejected_no_image'
 );
 create type public.dimension_source as enum ('jsonld', 'parser', 'llm_grounded');
 

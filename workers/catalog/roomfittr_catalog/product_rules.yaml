@@ -1,0 +1,168 @@
+# Per-category acceptance bands for the catalog (implementation-plan.md 4.7).
+#
+# 4.7 gives two worked examples -- "sofa W 1300-4000, D 700-1200, H 600-1100
+# mm; coffee table H 300-600" -- and leaves the rest to be filled in. These
+# are the rest, and they are data rather than code for the same reason
+# `category_rules.yaml` is: a person who knows furniture should be able to
+# argue with a number here without reading Python.
+#
+# The bands are deliberately generous. Their job is to catch a measurement
+# that is *wrong* -- a carton size, a swapped axis, inches read as
+# centimetres -- not to enforce taste. A band narrow enough to exclude an
+# unusual but real sofa costs a product; one wide enough to admit a 4 m
+# coffee table costs a layout that cannot be built. 9.3 rates R7 Critical,
+# so where the two conflict these err towards rejecting.
+#
+# Every key must be in 4.2's closed vocabulary. A test asserts that, because
+# a category here that the layout engine has never heard of would accept
+# products nothing can ever place.
+
+defaults:
+  width_mm: [200, 4000]
+  depth_mm: [200, 2500]
+  height_mm: [50, 2600]
+  # 4.7: "Price present & plausible: > 0, within category band ($10-$15,000)".
+  price_cents: [1000, 1500000]
+
+categories:
+  sofa:
+    # 4.7's own example.
+    width_mm: [1300, 4000]
+    depth_mm: [700, 1200]
+    height_mm: [600, 1100]
+    price_cents: [20000, 1500000]
+
+  sectional:
+    width_mm: [1800, 4500]
+    depth_mm: [800, 2500]
+    height_mm: [600, 1100]
+    price_cents: [40000, 1500000]
+
+  loveseat:
+    width_mm: [1100, 1900]
+    depth_mm: [700, 1100]
+    height_mm: [600, 1100]
+    price_cents: [15000, 900000]
+
+  armchair:
+    width_mm: [550, 1200]
+    depth_mm: [550, 1100]
+    height_mm: [600, 1200]
+    price_cents: [8000, 900000]
+
+  accent_chair:
+    width_mm: [400, 1000]
+    depth_mm: [400, 950]
+    height_mm: [600, 1200]
+    price_cents: [5000, 600000]
+
+  dining_chair:
+    width_mm: [350, 700]
+    depth_mm: [350, 750]
+    height_mm: [700, 1200]
+    price_cents: [3000, 250000]
+
+  office_chair:
+    width_mm: [450, 850]
+    depth_mm: [450, 850]
+    height_mm: [700, 1400]
+    price_cents: [5000, 400000]
+
+  bench:
+    width_mm: [600, 2200]
+    depth_mm: [280, 600]
+    height_mm: [350, 600]
+    price_cents: [4000, 300000]
+
+  ottoman:
+    # 4.7: "no W=D=H identical triples unless category allows (cube ottoman)".
+    allow_cube: true
+    width_mm: [300, 1400]
+    depth_mm: [300, 1000]
+    height_mm: [280, 550]
+    price_cents: [3000, 250000]
+
+  coffee_table:
+    width_mm: [500, 2000]
+    depth_mm: [300, 1200]
+    # 4.7's own example.
+    height_mm: [300, 600]
+    price_cents: [3000, 500000]
+
+  side_table:
+    width_mm: [250, 800]
+    depth_mm: [250, 800]
+    height_mm: [350, 750]
+    price_cents: [2000, 250000]
+
+  console_table:
+    width_mm: [700, 2200]
+    depth_mm: [200, 550]
+    height_mm: [650, 950]
+    price_cents: [5000, 400000]
+
+  dining_table:
+    width_mm: [700, 3200]
+    depth_mm: [600, 1400]
+    height_mm: [700, 800]
+    price_cents: [10000, 900000]
+
+  desk:
+    width_mm: [700, 2400]
+    depth_mm: [400, 1000]
+    height_mm: [650, 1250]
+    price_cents: [6000, 500000]
+
+  bed_frame:
+    width_mm: [900, 2200]
+    depth_mm: [1800, 2400]
+    height_mm: [250, 1600]
+    price_cents: [15000, 1200000]
+
+  nightstand:
+    width_mm: [250, 800]
+    depth_mm: [250, 600]
+    height_mm: [350, 900]
+    price_cents: [3000, 250000]
+
+  dresser:
+    width_mm: [600, 2200]
+    depth_mm: [300, 700]
+    height_mm: [600, 1500]
+    price_cents: [10000, 700000]
+
+  cabinet:
+    tall: true
+    width_mm: [400, 2400]
+    depth_mm: [250, 700]
+    height_mm: [500, 2400]
+    price_cents: [8000, 700000]
+
+  bookshelf:
+    # 4.7: "Height not > 3x width for non-tall categories". A bookshelf is
+    # exactly the shape that rule would reject, so it is marked tall.
+    tall: true
+    width_mm: [300, 2000]
+    depth_mm: [200, 600]
+    height_mm: [500, 2500]
+    price_cents: [4000, 400000]
+
+  tv_stand:
+    width_mm: [600, 2600]
+    depth_mm: [250, 600]
+    height_mm: [300, 900]
+    price_cents: [5000, 400000]
+
+  floor_lamp:
+    tall: true
+    width_mm: [150, 900]
+    depth_mm: [150, 900]
+    height_mm: [900, 2100]
+    price_cents: [3000, 300000]
+
+  rug:
+    # 4.5 defaults a rug's height to 10 mm, so the band has to admit it.
+    width_mm: [500, 5000]
+    depth_mm: [500, 5000]
+    height_mm: [2, 80]
+    price_cents: [2000, 800000]

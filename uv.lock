@@ -1945,6 +1945,12 @@ dev = [
 name = "roomfittr-catalog"
 version = "0.1.0"
 source = { editable = "workers/catalog" }
+dependencies = [
+    { name = "pyyaml" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "pyyaml", specifier = ">=6.0" }]
 
 [[package]]
 name = "roomfittr-layout"

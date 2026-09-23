@@ -422,7 +422,7 @@ class TestCatalog:
         """Guessing an id must not surface a listing we decided was wrong.
         9.3's R7 is about wrong dimensions reaching the user; a rejected row
         readable by id is that failure with an extra step."""
-        rejected = _seed_product(db, status="rejected_dimensions")
+        rejected = _seed_product(db, status="rejected_implausible_dimensions")
         with acting_as(DB_URL, None, role="anon") as cur:
             cur.execute("select count(*) from public.products where id = %s", (rejected,))
             assert cur.fetchone()[0] == 0
