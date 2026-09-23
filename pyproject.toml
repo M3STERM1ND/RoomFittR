@@ -7,6 +7,7 @@ dependencies = [
     "roomfittr-schemas",
     "roomfittr-pipeline",
     "roomfittr-layout",
+    "roomfittr-planner",
     "pydantic>=2.9",
     "jsonschema>=4.23",
     "pyyaml>=6.0",
@@ -36,12 +37,13 @@ dev = [
 system-certs = true
 
 [tool.uv.workspace]
-members = ["workers/schemas_py", "workers/pipeline", "workers/layout"]
+members = ["workers/schemas_py", "workers/pipeline", "workers/layout", "workers/planner"]
 
 [tool.uv.sources]
 roomfittr-schemas = { workspace = true }
 roomfittr-pipeline = { workspace = true }
 roomfittr-layout = { workspace = true }
+roomfittr-planner = { workspace = true }
 
 [tool.ruff]
 line-length = 100

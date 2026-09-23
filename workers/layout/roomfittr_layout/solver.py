@@ -126,12 +126,21 @@ class Slot:
 
 @dataclass(frozen=True, slots=True)
 class Placement:
-    """A solved slot."""
+    """A solved slot.
+
+    `product_id` is separate from `slot_id` because 6.2's `placed_items` has
+    both columns and they answer different questions: the slot is which role
+    the item plays in the plan, the product is what the user is going to buy.
+    Without it a solved layout cannot be persisted, priced against a later
+    catalog refresh, or linked out to a retailer -- and L4's whole job is
+    choosing it.
+    """
 
     slot_id: str
     item: PlacedItem
     score: float
     relaxed: bool = False
+    product_id: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -163,6 +172,7 @@ class SolverResult:
                 for d in self.dropped
             ],
             "relaxed": [p.slot_id for p in self.placements if p.relaxed],
+            "products": {p.slot_id: p.product_id for p in self.placements if p.product_id},
         }
 
 
@@ -667,6 +677,7 @@ def solve(
                                         item=item,
                                         score=pose_score,
                                         relaxed=relaxation > 0,
+                                        product_id=candidate.product_id,
                                     ),
                                 ],
                             )

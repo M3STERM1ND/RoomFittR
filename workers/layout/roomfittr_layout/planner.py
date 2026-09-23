@@ -418,24 +418,34 @@ def pick(
     shortlists: dict[str, list[Product]],
     *,
     budget_cents: int,
+    preferred: dict[str, str] | None = None,
 ) -> dict[str, list[Product]]:
-    """5.4 L4's deterministic path: choose per slot, then settle the budget.
+    """5.4 L4: choose per slot, then settle the budget.
 
-    The plan has Claude doing this for visual coherence, with this as the
-    fallback. The budget pass afterwards is deterministic either way -- 5.5
-    H7 is a hard rule for AI layouts, so the model's choice is never the last
-    word on what the layout costs.
+    `preferred` is the model's choice per slot when there was a call --
+    5.4's "a Haiku call per layout selects one product ID per slot, favoring
+    visual coherence". An id that is not in that slot's own shortlist is
+    ignored in favour of the top-ranked item, which is what 5.4 requires and
+    is also the whole of the deterministic path: pass nothing and every slot
+    takes its best-ranked option.
+
+    The budget pass afterwards runs either way -- 5.5 H7 is a hard rule for
+    AI layouts, so the model's choice is never the last word on what the
+    layout costs.
 
     Returns the shortlist per slot reordered with the chosen product first,
     because the solver walks the list when its first choice does not fit.
     """
+    wanted = preferred or {}
     chosen: dict[str, Product] = {}
     for slot in plan.slots:
         options = shortlists.get(slot.slot_id, [])
-        if options:
-            chosen[slot.slot_id] = options[0]
+        if not options:
+            continue
+        by_id = {product.id: product for product in options}
+        chosen[slot.slot_id] = by_id.get(wanted.get(slot.slot_id, ""), options[0])
 
-    chosen = _fit_to_budget(plan, chosen, shortlists, budget_cents)
+    chosen = _fit_to_budget(plan, chosen, shortlists, budget_cents, deliberate=set(wanted))
 
     result: dict[str, list[Product]] = {}
     for slot in plan.slots:
@@ -453,12 +463,25 @@ def _fit_to_budget(
     chosen: dict[str, Product],
     shortlists: dict[str, list[Product]],
     budget_cents: int,
+    deliberate: set[str] | None = None,
 ) -> dict[str, Product]:
     """5.4 L4: swap down while over budget, then upgrade if money is left.
 
     "Repeatedly swap the item with the best price saved per score lost, and
     if still over, drop the lowest-priority slot." Score-lost is approximated
     by shortlist position, which is what the ranking already encodes.
+
+    `deliberate` is the set of slots a model actually chose for, and the
+    upgrade pass leaves them alone. 5.4 gives both rules -- the model picks
+    "favoring visual coherence", and leftover money upgrades `must` slots --
+    and with a loose budget they contradict each other: the upgrade pass
+    ranks on price alone, so it would systematically replace the chosen sofa
+    with the dearest one in the shortlist and undo the coherence the call was
+    made to buy. That is R12 ("layouts look unnatural even when valid")
+    reintroduced by the budget pass, so the deliberate choice wins.
+
+    Swapping *down* is not exempt: 5.5 H7 is a hard rule and a layout over
+    budget has no legal alternative.
     """
     by_id = {slot.slot_id: slot for slot in plan.slots}
     working = dict(chosen)
@@ -498,10 +521,11 @@ def _fit_to_budget(
     # slots within their shortlists." A budget deliberately left unspent is
     # not a feature the user asked for.
     remaining = budget_cents - total()
+    untouchable = deliberate or set()
     if remaining > budget_cents * 0.10:
         for slot in sorted(plan.slots, key=lambda s: PRIORITY_ORDER.get(s.priority, 1)):
             chosen_here = working.get(slot.slot_id)
-            if chosen_here is None:
+            if chosen_here is None or slot.slot_id in untouchable:
                 continue
             for alternative in shortlists.get(slot.slot_id, []):
                 extra = alternative.price_cents - chosen_here.price_cents
@@ -537,11 +561,14 @@ def plan_for(
     budget_cents: int,
     style: str | None = None,
     proposed: LayoutPlan | None = None,
+    preferred: dict[str, str] | None = None,
 ) -> tuple[LayoutPlan, list[Slot]]:
-    """The whole of L2-L4 without an LLM: plan, shortlist, pick.
+    """The whole of L2-L4: plan, shortlist, pick.
 
-    `proposed` is the model's plan when there is one. Passing None uses the
-    template, which is what happens on an LLM failure and in every test.
+    `proposed` is the model's plan when there is one and `preferred` its
+    product choices. Passing neither runs the entirely deterministic path --
+    the template plan and the top-ranked product per slot -- which is what
+    happens on an LLM failure and in every test that has no network.
     """
     minimums = _cheapest_per_category(catalog)
     raw = proposed if proposed is not None else template_plan(room_type)
@@ -551,7 +578,10 @@ def plan_for(
         slot.slot_id: shortlist(slot, catalog, analysis, budget_cents=budget_cents, style=style)
         for slot in checked.slots
     }
-    return checked, to_solver_slots(checked, pick(checked, shortlists, budget_cents=budget_cents))
+    return checked, to_solver_slots(
+        checked,
+        pick(checked, shortlists, budget_cents=budget_cents, preferred=preferred),
+    )
 
 
 def _cheapest_per_category(catalog: list[Product]) -> dict[str, int]:
