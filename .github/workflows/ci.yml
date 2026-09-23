@@ -55,6 +55,45 @@ jobs:
       - run: uv run mypy workers eval
       - run: uv run pytest -q
 
+  # 9.1 gates the "RLS isolation suite" on "every CI run touching DB/API",
+  # and gives the reason: "Home videos are sensitive; cross-user access is the
+  # worst-case bug." Its own job rather than a step in the Python one, because
+  # it needs a database and the other 685 tests must not wait for one.
+  #
+  # The image is Supabase's own Postgres, so `auth.uid()`, the `authenticated`
+  # and `anon` roles and the `vector` extension are the real ones. The suite
+  # connects as `supabase_admin`: the migrations put a trigger on `auth.users`
+  # and only its owner may do that. In hosted Supabase the migration role
+  # already holds that right, so the password line below is a property of the
+  # bare image, not of the schema.
+  rls:
+    name: RLS isolation suite
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: public.ecr.aws/supabase/postgres:17.6.1.167
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - name: Give the superuser a password for TCP connections
+        run: |
+          docker exec "$(docker ps -q --filter ancestor=public.ecr.aws/supabase/postgres:17.6.1.167)"             psql -U supabase_admin -d postgres             -c "alter role supabase_admin with password 'postgres'"
+      - run: uv run pytest supabase/tests -v
+        env:
+          ROOMFITTR_TEST_DB_URL: postgresql://supabase_admin:postgres@localhost:55432/postgres
+
   # The schemas are the single definition of the four documents shared between
   # TypeScript and Python (implementation-plan.md 2.4). This job is what stops
   # the two languages drifting apart: it regenerates from the schemas and fails

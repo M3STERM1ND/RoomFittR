@@ -29,6 +29,10 @@ dev = [
     "playwright>=1.63.0",
     "static-ffmpeg>=3.0",
     "scipy-stubs>=1.18.1.0",
+    # The RLS isolation suite (9.1) talks to Postgres directly, because the
+    # thing under test is the database's own access control rather than any
+    # code we wrote around it.
+    "psycopg[binary]>=3.2",
 ]
 
 [tool.uv]
@@ -90,5 +94,5 @@ follow_imports = "skip"
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-testpaths = ["workers", "eval"]
+testpaths = ["workers", "eval", "supabase"]
 pythonpath = ["."]
