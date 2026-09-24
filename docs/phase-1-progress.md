@@ -4,14 +4,14 @@ Live status for `implementation-plan.md` §8 Phase 1 (Video → 3D Room Proof of
 Concept — **the gate**). Updated as work lands. **If work stopped partway, the
 "Stopped at" line below is the resume point.**
 
-**Stopped at:** _**The GPU path is proven, 2026-09-23.** VGGT-1B-Commercial
-and SAM 3 have both run on a real Modal GPU against real ARKitScenes frames,
-and the deployed `reconstruct_vggt_l40s` function's output passes
-`backends.validate` and back-projects to 2.3 M points locally. Every CPU stage
-was already built and tested. What remains for the gate is **R2** (the
-pipeline has nowhere to write artefacts), a **full-dataset bake-off**, and
-**Tier B captures**, which no amount of implementation can produce -- E2, E3,
-E5 and E8 are decided on self-captured rooms (3.10)._
+**Stopped at:** _**The pipeline runs end to end on real captures, and E2 is
+blocked on a missing metric scale source, 2026-09-23.** Four ARKitScenes
+captures have been through S1-S9 with real VGGT-1B-Commercial and SAM 3 on a
+Modal GPU, with artefacts in R2 and schema-valid RoomModels out. E7 passes on
+L40S. **E2 cannot be evaluated**: VGGT is up-to-scale, neither MapAnything nor
+MoGe-2 is wired, and every room therefore comes out 2564 mm tall -- see
+`eval/reports/phase1.md` §3. Phase 1 is **not** complete and cannot be until
+that is fixed and Tier B exists._
 
 ---
 

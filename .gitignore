@@ -25,7 +25,10 @@ __pycache__/
 # Eval artefacts: captures and pipeline runs are large and are not source.
 # The laser-measured ground truth IS source and stays tracked.
 eval/captures/
-eval/reports/
+eval/reports/*
+# The bake-off report is the deliverable 3.10 asks for, not an artefact: it
+# carries the go/no-go call and the reasoning behind it.
+!eval/reports/phase1.md
 
 # ...except the hand-built dummy run. It is small, it is the fixture the
 # harness's end-to-end test runs against, and it is the Phase 0 evidence that

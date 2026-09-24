@@ -20,7 +20,7 @@ provisional scale is applied before geometry and corrected afterwards -- see
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -140,7 +140,7 @@ def run(
     # still producing a valid-looking RoomModel. S4's `floor` label is the
     # evidence when it exists; otherwise the caller must supply gravity,
     # which is what 3.2's motion sidecar and ARKitScenes' poses both provide.
-    provisional = _provisional_scale(reconstruction, structure_points)
+    provisional, provisional_is_metric = _provisional_scale(reconstruction, structure_points)
     if len(floor_points) >= 3:
         seed_points = floor_points * provisional
     elif gravity_hint is not None:
@@ -181,7 +181,7 @@ def run(
     scale_result = _fuse_scale(
         reconstruction,
         room_geometry,
-        provisional=provisional,
+        provisional_is_metric=provisional_is_metric,
         user_measurement_mm=user_measurement_mm,
         user_measured_units=user_measured_units,
     )
@@ -212,7 +212,10 @@ def run(
         # S5's view overlap and is left at 0 until that exists, rather than
         # invented here from the frame count.
         coverage_pct=0.0,
-        warnings=model_warnings,
+        # Deduplicated, order preserved: `roommodel.build` adds its own
+        # quality codes and S6 may raise the same one per wall, so the
+        # same code otherwise appears several times in one room.
+        warnings=list(dict.fromkeys(model_warnings)),
     )
 
     return ScanResult(
@@ -252,10 +255,10 @@ def _partition(
     floor_lifted: list[NDArray[np.float64]] = []
 
     for instance in instances:
-        if instance.masks.shape != object_masks.shape:
-            # A mask that does not line up with the depth maps cannot be
-            # lifted. Skipping it loudly beats guessing at a resize.
+        masks = _conform(instance.masks, object_masks.shape)
+        if masks is None:
             continue
+        instance = replace(instance, masks=masks)
         is_opening = instance.label in _OPENING_LABELS
         if instance.label == "floor":
             # Kept separately: S5's plane fit needs floor and only floor.
@@ -308,6 +311,40 @@ def _partition(
     return structure_points, floor_out, objects_out, openings_out
 
 
+def _conform(masks: NDArray[np.bool_], target: tuple[int, ...]) -> NDArray[np.bool_] | None:
+    """Resize S4's masks onto S3's depth resolution.
+
+    These genuinely differ and it is not a bug in either: SAM 3 returns masks
+    at the frame's own size, while VGGT pads its input to a multiple of 14, so
+    a 388x518 frame comes back with 392x518 depth. Skipping the mismatch --
+    which is what this did first -- silently discards *every* instance, and
+    the symptom is S5 refusing to orient the room because no floor was
+    segmented. It took a full pipeline run to see that.
+
+    Nearest-neighbour, because these are labels rather than intensities: any
+    interpolation invents boundary pixels that belong to no instance.
+    """
+    if masks.shape == target:
+        return masks
+    if masks.ndim != 3 or masks.shape[0] != target[0]:
+        # A different *frame count* is not a resolution mismatch; it means the
+        # two stages saw different inputs, and resizing would hide that.
+        return None
+
+    import cv2
+
+    height, width = target[1], target[2]
+    out = np.zeros(target, dtype=bool)
+    for i in range(masks.shape[0]):
+        if not masks[i].any():
+            continue
+        resized = cv2.resize(
+            masks[i].astype(np.uint8), (width, height), interpolation=cv2.INTER_NEAREST
+        )
+        out[i] = resized.astype(bool)
+    return out
+
+
 def _lowest_band(
     points: NDArray[np.float64],
     gravity: NDArray[np.float64],
@@ -335,7 +372,7 @@ def _lowest_band(
 
 def _provisional_scale(
     reconstruction: backends.Reconstruction, structure_points: NDArray[np.float64]
-) -> float:
+) -> tuple[float, bool]:
     """A rough units-to-millimetres factor, so S6's metric thresholds apply.
 
     S6 reasons in millimetres -- cell sizes, minimum wall lengths, ceiling
@@ -346,20 +383,20 @@ def _provisional_scale(
     then corrects it properly.
     """
     if reconstruction.metric_scale is not None:
-        return float(reconstruction.metric_scale)
+        return float(reconstruction.metric_scale), True
 
     if len(structure_points) == 0:
-        return 1.0
+        return 1.0, False
     # Robust vertical extent: percentiles rather than min/max, because a
     # single stray point above the ceiling would halve the estimate.
     low, high = np.percentile(structure_points[:, 1], [2.0, 98.0])
     extent = float(abs(high - low))
     if extent <= 0:
-        return 1.0
+        return 1.0, False
     # The same 2590 mm prior `scale.from_ceiling_height` defaults to. Spelled
     # out rather than imported because this is a *provisional* guess used only
     # to make S6's metric thresholds apply; S7 does the real fusing.
-    return 2590.0 / extent
+    return 2590.0 / extent, False
 
 
 def _extract_geometry(
@@ -384,7 +421,9 @@ def _extract_geometry(
         if opening is not None:
             fitted.append(opening)
 
-    room = geometry.RoomGeometry(polygon=polygon, walls=walls, openings=fitted, profile=profile)
+    room = geometry.RoomGeometry(
+        polygon=polygon, walls=walls, openings=_merge_openings(fitted), profile=profile
+    )
     warnings = geometry.sanity_check(room)
     return geometry.RoomGeometry(
         polygon=room.polygon,
@@ -395,11 +434,79 @@ def _extract_geometry(
     )
 
 
+def _merge_openings(openings: list[geometry.Opening]) -> list[geometry.Opening]:
+    """Fold duplicate detections of one opening into one.
+
+    S4's tracking is IoU across adjacent frames, so a door that leaves the view
+    and comes back is two tracks (`adapters/sam3.py` says so). Fitted
+    independently, those become two openings at the same place, and 3.6's
+    sanity check rightly refuses a wall with overlapping doors -- which is how
+    this was found, on the first real capture.
+
+    Merging is by wall, type and overlap, and takes the union of the extent
+    rather than either one alone: two partial views of a door each see part of
+    it, so the union is closer to the opening than either sighting.
+    """
+    if len(openings) < 2:
+        return openings
+
+    merged: list[geometry.Opening] = []
+    for opening in sorted(openings, key=lambda o: (o.wall_id, o.type, o.offset_mm)):
+        target = None
+        for i, kept in enumerate(merged):
+            if kept.wall_id != opening.wall_id or kept.type != opening.type:
+                continue
+            # Any overlap along the wall at all: two doors genuinely side by
+            # side share an edge at most, and the schema forbids the overlap
+            # anyway, so merging is the only outcome that produces a room.
+            if opening.offset_mm < kept.offset_mm + kept.width_mm and (
+                kept.offset_mm < opening.offset_mm + opening.width_mm
+            ):
+                target = i
+                break
+        if target is None:
+            merged.append(opening)
+            continue
+
+        kept = merged[target]
+        start = min(kept.offset_mm, opening.offset_mm)
+        end = max(kept.offset_mm + kept.width_mm, opening.offset_mm + opening.width_mm)
+        sill = min(kept.sill_mm, opening.sill_mm)
+        top = max(kept.sill_mm + kept.height_mm, opening.sill_mm + opening.height_mm)
+        merged[target] = geometry.Opening(
+            id=kept.id,
+            wall_id=kept.wall_id,
+            type=kept.type,
+            offset_mm=start,
+            width_mm=end - start,
+            sill_mm=sill,
+            height_mm=top - sill,
+            swing=kept.swing,
+            confidence=max(kept.confidence, opening.confidence),
+        )
+
+    # Renumbered so ids stay dense and ordered after a merge.
+    return [
+        geometry.Opening(
+            id=f"O{i + 1}",
+            wall_id=o.wall_id,
+            type=o.type,
+            offset_mm=o.offset_mm,
+            width_mm=o.width_mm,
+            sill_mm=o.sill_mm,
+            height_mm=o.height_mm,
+            swing=o.swing,
+            confidence=o.confidence,
+        )
+        for i, o in enumerate(merged)
+    ]
+
+
 def _fuse_scale(
     reconstruction: backends.Reconstruction,
     room_geometry: geometry.RoomGeometry,
     *,
-    provisional: float,
+    provisional_is_metric: bool,
     user_measurement_mm: float | None,
     user_measured_units: float | None,
 ) -> scale.ScaleResult:
@@ -419,7 +526,14 @@ def _fuse_scale(
         # `reject_outliers` instead of quietly setting the room's size.
         sources.append(scale.ScaleSource(name="model", factor=1.0))
 
-    if room_geometry.profile.ceiling_observed:
+    # **The ceiling is only evidence when the provisional scale did not come
+    # from assuming one.** For an up-to-scale backend, `_provisional_scale`
+    # normalises the room's vertical extent to 2590 mm, so S6 then measures a
+    # 2590 mm ceiling by construction and feeding that back here is circular:
+    # every room comes out the same height whatever its real one. Found by
+    # running two different rooms and getting an identical ceiling and an
+    # identical scale factor out of both.
+    if room_geometry.profile.ceiling_observed and provisional_is_metric:
         sources.append(scale.from_ceiling_height(room_geometry.profile.ceiling_mm))
 
     for opening in room_geometry.openings:
@@ -430,9 +544,13 @@ def _fuse_scale(
         sources.append(scale.from_user_measurement(user_measured_units, user_measurement_mm))
 
     if not sources:
-        # Nothing to correct with. Honest 1.0 with low confidence beats
-        # inventing a number: S7's job is to say how sure it is.
-        return scale.fuse([scale.from_ceiling_height(room_geometry.profile.ceiling_mm)])
+        # Nothing independent to correct with, which for an up-to-scale
+        # backend with no door, no mono-depth and no user measurement is the
+        # honest outcome. 3.7 names MoGe-2 as the mono source and it is not
+        # built yet; until it is, this path means the room's size rests
+        # entirely on the 2590 mm assumption and must say so rather than
+        # dressing the assumption up as a measurement.
+        return scale.fuse([scale.ScaleSource(name="model", factor=1.0, weight=0.01)])
 
     kept, rejected = scale.reject_outliers(sources)
     if rejected:
