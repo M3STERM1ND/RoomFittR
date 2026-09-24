@@ -106,6 +106,21 @@ for choosing it over S3 (§1.1), since GLBs get downloaded constantly.
    30 days; keep the source video and the final GLB. This is the difference between a $3/mo
    bill and a $30/mo one.
 
+**Verified 2026-09-23.** A full round trip through `roomfittr_pipeline.storage`:
+PUT, GET, HEAD, LIST, a presigned GET returning 200, and cleanup. The bucket is confirmed
+**private** -- the same URL without a signature is refused -- which is the rule this section
+opens with, checked rather than assumed. The same credentials reach a Modal worker through
+the `roomfittr-r2` secret (`probe_environment` reports `r2_configured: true`).
+
+**Steps 4 and 5 cannot be done with this token, and that is correct.** An
+Object Read & Write token gets `AccessDenied` on `PutBucketCors` and
+`PutBucketLifecycleConfiguration`, because those are bucket-level
+configuration rather than object operations. Set both in the Cloudflare
+dashboard, or issue a separate admin-scoped token for the one-off and discard
+it. Narrowing the token was deliberate (step 2); widening it so a script can
+configure a bucket once would trade a standing privilege for a moment's
+convenience.
+
 **Key layout** — fixed by §2.4, and worth getting right from the first upload because
 lifecycle rules and debugging both depend on it:
 
@@ -296,7 +311,7 @@ the only thing that catches a mistake nobody predicted.
 | --- | --- | --- | --- |
 | Supabase dev | ☐ | ☐ | n/a |
 | Supabase prod | ☐ | never | ☐ |
-| R2 dev | ☐ | ☐ | ☐ |
+| R2 dev | ☑ 2026-09-23 `roomfittr-dev` | ☑ | ☑ `roomfittr-r2` (main + dev) |
 | R2 prod | ☐ | never | ☐ |
 | Modal workspace | ☑ 2026-09-20 `tejas-15913` | ☑ | ☑ `roomfittr-hf` (main + dev) |
 | Sentry web | ☑ 2026-09-20 `roomfittr` | ☑ | n/a (build-time token) |

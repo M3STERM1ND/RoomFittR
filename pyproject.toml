@@ -25,6 +25,12 @@ dev = [
     # does not become a runtime dependency of a package that 2.4 requires to
     # be free of it.
     "roomfittr-modal",
+    # The `r2` extra on roomfittr-pipeline, pulled in for development: the eval
+    # harness and the verification in `infrastructure-setup.md` both talk to
+    # real R2 from this machine. It stays an extra rather than a runtime
+    # dependency so CI, which has no credentials, installs neither boto3 nor
+    # botocore.
+    "roomfittr-pipeline[r2]",
     "datamodel-code-generator>=0.26",
     "pytest>=8.3",
     "ruff>=0.8",
