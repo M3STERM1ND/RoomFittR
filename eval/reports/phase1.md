@@ -44,40 +44,59 @@ against every frame — 12 frames × 30 prompts here, and the full budget would 
 64 × 30. And the A100-80 path has not been timed, so the E7 comparison §3.10
 asks for is half done.
 
-## 3. The finding that blocks E2
+## 3. Scale: the circularity is fixed, the accuracy is not
 
-**Scale is not being measured. Every room comes out 2564 mm tall.**
+**Then.** gt-005, gt-008 and gt-012 are rooms of 3.67, 23.96 and 8.53 m2, and
+all three reported an identical 2564 mm ceiling and an identical 1.0684 scale
+factor. Identical outputs from different inputs is what made it worth chasing.
+Two circular paths, both ours: `_provisional_scale` normalised an up-to-scale
+reconstruction's vertical extent to 2590 mm so S6's metric thresholds would
+apply, S6 then "measured" a 2590 mm ceiling *by construction*, and S7 fused
+that back in as evidence. Removing it changed nothing, because every fitted
+door reported exactly 2030 mm -- the door prior itself.
 
-gt-005, gt-008 and gt-012 are different rooms of 3.67, 23.96 and 8.53 m². All
-three reported an identical ceiling height of 2564 mm and an identical scale
-factor of 1.0684. Identical outputs from different inputs are not a coincidence
-and were the thread worth pulling.
+**Now.** MapAnything (candidate A) is wired and is genuinely metric: its
+`depth_z` comes back in metres, its scale correction is **1.0000**, and the
+recovered ceilings now *differ between rooms* -- 3044, 2968, 3240, 3285 mm.
+The constant is gone and scale is being measured rather than assumed.
 
-The mechanism, in two parts, both of them circular:
+**It is measured, and it is wrong.** Against truth ceilings of 2820, 2479 and
+2529 mm, those are 8-20% high, and E2's median wall error is 180% -- against a
+criterion of 5%. The error is no longer an artefact of the pipeline's own
+assumption; it is the reconstruction's, which is a better problem to have and
+still a failing one.
 
-1. **The ceiling could not be evidence.** VGGT is up-to-scale, so
-   `pipeline._provisional_scale` normalised each room's vertical extent to
-   2590 mm to make S6's metric thresholds apply. S6 then "measured" a 2590 mm
-   ceiling *by construction*, and S7 fused that back in as a scale source. The
-   answer was fixed before the measurement. **Fixed** — the ceiling now only
-   votes when the backend is genuinely metric.
-2. **The door prior is no better here.** Every fitted door reports a height of
-   exactly 2030 mm, which is the door prior itself: the opening is measured at
-   1900 provisional units, scaled by 2030/1900 = 1.0684, and therefore reports
-   2030 mm. Removing the ceiling source changes nothing, because the remaining
-   source produces the same constant.
+## 3a. E1: the first real candidate comparison
 
-So the room's size currently rests entirely on the assumption that rooms are
-2590 mm tall. **E2 (uncalibrated scale ≤ 5% median) cannot be evaluated against
-this**, and the 318% wall-length error the harness reports for gt-012 is
-measuring that assumption rather than the reconstruction.
+Four captures, same S5-S9 code, same frames, same prompts. This is what the
+adapter boundary in 3.4 was for.
 
-**This is not a surprise the plan failed to anticipate.** §3.4 lists
-MapAnything as candidate A *because* it predicts metric geometry, and §3.7
-lists MoGe-2 as the mono-depth scale source. Neither is wired up: MapAnything
-has never been loaded, and MoGe-2 does not exist in the codebase. Until one of
-them does, an up-to-scale backend has no metric anchor and E2 has nothing to
-measure.
+| | **B: VGGT-1B-Commercial** | **A: MapAnything** |
+| --- | --- | --- |
+| GPU time (64 frames) | **21 s** | 38-69 s |
+| Peak VRAM | **11.4 GB** | **36.2 GB** |
+| Scale | up to scale, no anchor | **metric, factor 1.0** |
+| Floor recall vs truth | 49-58% | **73-100%** |
+| Floor area vs truth | 0.7-1.5x | 3.1-3.9x |
+| E4 IoU >= 0.85 | 0 / 4 | 0 / 4 |
+| E2 median wall error | 338% | **180%** |
+
+**3.4's `[VERIFY]` on MapAnything's memory is answered: 36.2 GB at N = 64.**
+That is inside an A100-80 and inside an L40S's 46 GB, but it is three times
+VGGT's, and it grows with N -- the bake-off's N = 100 and 150 points are not
+safe to assume.
+
+The two models fail differently, and the difference is the useful part.
+**VGGT sees half the room; MapAnything sees all of it and then three times as
+much again.** MapAnything's recall is the harder thing to fix, so its failure
+mode is the more promising one -- over-extension is a filtering problem,
+missing geometry is not.
+
+A first attempt at that filtering is in `pipeline._trim_outliers`, bounding
+the floor plan by the camera path plus a margin (3.4 step 4, 3.11). It moved
+gt-012's ceiling from 3350 to 3044 mm and E2's median from 197% to 180%. It is
+not enough, and the remaining over-extension is the single clearest thing to
+work on next.
 
 ## 4. Geometry (E4, one capture)
 
@@ -129,13 +148,13 @@ E7 pass.
 
 | Experiment | State |
 | --- | --- |
-| E1 reconstruction bake-off | **not run** — one candidate on four captures; needs A, B, C, D over 13 |
-| E2 uncalibrated scale | **cannot be evaluated** — no metric source (§3) |
+| E1 reconstruction bake-off | **partial** — A and B compared on 4 captures (§3a); needs C, D and all 13 |
+| E2 uncalibrated scale | **measurable now, and failing**: 180% median against 5% (§3) |
 | E3 one-measurement calibration | not run; needs E2's machinery working |
-| E4 floor polygon | **fails on the one capture scored**; n=1 |
+| E4 floor polygon | **fails**, 0 of 4 at IoU >= 0.85, both candidates |
 | E5 openings | **no Tier A ground truth** — ARKitScenes has no door/window annotations (§3.10) |
 | E6 furniture | objects produced; scoring path not written |
-| E7 runtime and memory | **passing on L40S**; A100-80 not timed |
+| E7 runtime and memory | **VGGT passes**; MapAnything measured at 36.2 GB (§3a) |
 | E8 sloppy captures | needs Tier B |
 | E9 browser recording | **passed** (Phase 0) |
 | E10 appearance | needs five people |
@@ -144,11 +163,13 @@ E7 pass.
 
 **Unblocked, in priority order:**
 
-1. **A real metric scale source.** Either wire MapAnything (candidate A, metric,
-   never loaded) or implement MoGe-2 (§3.7). Nothing about E2, E3 or the wall
-   metrics means anything until one exists.
-2. **Raise coverage** or explain the shortfall: 64 keyframes recovered half of
-   gt-012's footprint.
+1. **Stop the floor plan over-extending.** MapAnything already recovers
+   essentially the whole room; its polygon is then 3-4x too large because the
+   reconstruction sees through doorways and windows. `_trim_outliers` is a
+   start and is not enough. This is the one change that would move E4, and E4
+   moving is what makes E2's wall metric mean anything.
+2. **Profile at N = 100 and 150.** MapAnything is at 36.2 GB at N = 64, and
+   3.9's budget is one GPU.
 3. **The §3.2 size decision.** Nine of the 13 captures exceed `MAX_BYTES`
    (750 MB) and cannot run at all. The three options and their trade-offs are
    in `docs/phase-1-progress.md`; the bake-off cannot cover the dataset until

@@ -79,7 +79,14 @@ class MapAnythingBackend:
         poses = _stack(predictions, "camera_poses", np.float64)
         intrinsics = _stack(predictions, "intrinsics", np.float64)
         depth = _stack(predictions, "depth_z", np.float32)
-        confidence = _stack(predictions, "mask", np.float32)
+        # `conf` is a graded score; `mask` is a validity flag. The first draft
+        # of this adapter used `mask`, which throws away everything
+        # `confidence_floor`'s percentile exists to use -- 3.4 step 4 drops the
+        # least confident 30% of points, and that is meaningless against a
+        # field that is only ever 0 or 1. Probed on a real run: both exist.
+        confidence = _stack_optional(predictions, "conf", np.float32)
+        if confidence is None:
+            confidence = _stack(predictions, "mask", np.float32)
 
         if depth.ndim == 4:
             depth = np.squeeze(depth, axis=-1)
@@ -90,11 +97,7 @@ class MapAnythingBackend:
             poses=_to_4x4(poses),
             intrinsics=intrinsics,
             depth=depth,
-            # MapAnything's `mask` is a validity flag, not a graded score. It
-            # is reported as 0 or 1 rather than dressed up as a confidence,
-            # so `confidence_floor`'s percentile does the only thing it
-            # honestly can here: keep the valid pixels.
-            confidence=np.clip(confidence, 0.0, 1.0).astype(np.float32),
+            confidence=_normalise_confidence(confidence),
             backend=self.name,
             # The model is metric, so its unit *is* the metre. S7 still
             # decides; this is one vote (see the module docstring).
@@ -103,6 +106,14 @@ class MapAnythingBackend:
 
 
 def _stack(predictions: Any, key: str, dtype: type) -> np.ndarray:
+    """Required field: absent means the model did not produce a reconstruction."""
+    out = _stack_optional(predictions, key, dtype)
+    if out is None:
+        raise PipelineError("RECON_FAILED", Stage.RECONSTRUCT, f"MapAnything returned no {key!r}")
+    return out
+
+
+def _stack_optional(predictions: Any, key: str, dtype: type) -> np.ndarray | None:
     """Pull one field out of MapAnything's per-view dicts into one array.
 
     Accepts either a list of per-view dicts or an already-batched dict, since
@@ -120,23 +131,33 @@ def _stack(predictions: Any, key: str, dtype: type) -> np.ndarray:
 
     if isinstance(predictions, dict):
         if key not in predictions:
-            raise PipelineError(
-                "RECON_FAILED", Stage.RECONSTRUCT, f"MapAnything returned no {key!r}"
-            )
+            return None
         array = to_numpy(predictions[key])
         if array.ndim >= 1 and array.shape[0] == 1:
             array = array[0]
         return np.asarray(array, dtype=dtype)
 
-    missing = [i for i, view in enumerate(predictions) if key not in view]
-    if missing:
-        raise PipelineError(
-            "RECON_FAILED",
-            Stage.RECONSTRUCT,
-            f"MapAnything returned no {key!r} for view(s) {missing[:5]}",
-        )
+    if any(key not in view for view in predictions):
+        return None
     stacked = np.stack([np.squeeze(to_numpy(view[key])) for view in predictions], axis=0)
     return np.asarray(stacked, dtype=dtype)
+
+
+def _normalise_confidence(confidence: np.ndarray) -> np.ndarray:
+    """Map MapAnything's confidence onto the 0-1 the contract promises.
+
+    Same reasoning as the VGGT adapter's: the score is positive and unbounded,
+    so it is scaled by the 99th percentile rather than the max, which keeps one
+    speculative pixel from compressing the rest of the map into nothing. A
+    binary `mask` fallback passes through unchanged, since it is already 0-1.
+    """
+    finite = confidence[np.isfinite(confidence)]
+    if finite.size == 0:
+        return np.zeros_like(confidence, dtype=np.float32)
+    high = float(np.percentile(finite, 99.0))
+    if high <= 0:
+        return np.zeros_like(confidence, dtype=np.float32)
+    return np.clip(confidence / high, 0.0, 1.0).astype(np.float32)
 
 
 def _to_4x4(poses: np.ndarray) -> np.ndarray:

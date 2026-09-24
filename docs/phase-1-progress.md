@@ -4,14 +4,16 @@ Live status for `implementation-plan.md` §8 Phase 1 (Video → 3D Room Proof of
 Concept — **the gate**). Updated as work lands. **If work stopped partway, the
 "Stopped at" line below is the resume point.**
 
-**Stopped at:** _**The pipeline runs end to end on real captures, and E2 is
-blocked on a missing metric scale source, 2026-09-23.** Four ARKitScenes
-captures have been through S1-S9 with real VGGT-1B-Commercial and SAM 3 on a
-Modal GPU, with artefacts in R2 and schema-valid RoomModels out. E7 passes on
-L40S. **E2 cannot be evaluated**: VGGT is up-to-scale, neither MapAnything nor
-MoGe-2 is wired, and every room therefore comes out 2564 mm tall -- see
-`eval/reports/phase1.md` §3. Phase 1 is **not** complete and cannot be until
-that is fixed and Tier B exists._
+**Stopped at:** _**Both candidates run end to end on real captures; E4 is the
+blocker, 2026-09-23.** MapAnything (candidate A) is wired and is genuinely
+metric, so the scale circularity that made every room 2564 mm tall is gone --
+ceilings now differ between rooms. E7 passes for VGGT and 3.4's `[VERIFY]` on
+MapAnything's memory is answered at **36.2 GB**. **E2 and E4 both fail**: the
+floor plan over-extends 3-4x because the reconstruction sees through doorways
+and windows, and until that is fixed the wall metrics measure the
+over-extension rather than the room. Full numbers in `eval/reports/phase1.md`.
+Phase 1 is **not** complete: E2 and E4 fail on Tier A, and E2/E3/E5/E8 are
+ultimately decided on Tier B captures that no code can produce._
 
 ---
 

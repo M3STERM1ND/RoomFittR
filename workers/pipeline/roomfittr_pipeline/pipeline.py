@@ -172,8 +172,12 @@ def run(
         for track_id, (label, points) in opening_points.items()
     }
 
-    # S6.
-    room_geometry = _extract_geometry(aligned_structure, aligned_openings)
+    # S6. Trimmed first: see `_trim_outliers` for why the camera path rather
+    # than a percentile bounds the horizontal extent.
+    aligned_centres = alignment.apply(reconstruction.camera_centres() * provisional)
+    room_geometry = _extract_geometry(
+        _trim_outliers(aligned_structure, aligned_centres), aligned_openings
+    )
     model_warnings.extend(room_geometry.warnings)
 
     # S7. The provisional scale is already baked into the geometry, so what
@@ -397,6 +401,51 @@ def _provisional_scale(
     # out rather than imported because this is a *provisional* guess used only
     # to make S6's metric thresholds apply; S7 does the real fusing.
     return 2590.0 / extent, False
+
+
+def _trim_outliers(
+    points: NDArray[np.float64],
+    camera_centres: NDArray[np.float64],
+    *,
+    percentile: float = 2.0,
+    margin_mm: float = 1500.0,
+) -> NDArray[np.float64]:
+    """3.4 step 4 / 3.6: drop points that are not part of this room.
+
+    A reconstruction sees through doorways and windows, and 3.11 names that as
+    a known source of phantom geometry. Left in, those points extend the floor
+    plan into the next room: measured on Tier A, MapAnything's polygon covered
+    essentially all of the true floor and then three times as much again.
+
+    Two bounds, and neither is a percentile alone:
+
+    - **Horizontally, the camera path plus a margin.** The person walked
+      *inside* the room, so the room is within a few metres of where they
+      walked. A percentile on the points themselves cannot do this: when a
+      third of the cloud is the next room, the percentile is in the next room.
+    - **Vertically, a percentile**, which is safe because a room's height is
+      genuinely bounded and the tails are stray ceiling and sub-floor points.
+
+    The margin is deliberately generous. Cutting real wall is worse than
+    keeping some of next door: S6's evidence grid tolerates extra points far
+    better than a floor plan tolerates a missing corner.
+    """
+    if len(points) == 0 or len(camera_centres) == 0:
+        return points
+
+    low, high = np.percentile(points[:, 1], [percentile, 100.0 - percentile])
+    keep = (points[:, 1] >= low) & (points[:, 1] <= high)
+
+    x_lo, x_hi = camera_centres[:, 0].min() - margin_mm, camera_centres[:, 0].max() + margin_mm
+    z_lo, z_hi = camera_centres[:, 2].min() - margin_mm, camera_centres[:, 2].max() + margin_mm
+    keep &= (points[:, 0] >= x_lo) & (points[:, 0] <= x_hi)
+    keep &= (points[:, 2] >= z_lo) & (points[:, 2] <= z_hi)
+
+    trimmed: NDArray[np.float64] = points[keep]
+    # Never trim to nothing: if the bounds exclude almost everything, the
+    # camera path is the thing that is wrong and the raw cloud is the better
+    # of two bad inputs.
+    return trimmed if len(trimmed) >= 50 else points
 
 
 def _extract_geometry(
