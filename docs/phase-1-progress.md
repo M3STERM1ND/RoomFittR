@@ -4,16 +4,14 @@ Live status for `implementation-plan.md` §8 Phase 1 (Video → 3D Room Proof of
 Concept — **the gate**). Updated as work lands. **If work stopped partway, the
 "Stopped at" line below is the resume point.**
 
-**Stopped at:** _**Blocked on a GPU and on R2, 2026-09-20.** Every CPU stage of
-the pipeline is built and tested (S1, S2, S5, S6, S7, S8, S9, plus the S3/S4
-adapter contract). Since this was last written, three of the four blockers have
-cleared on this machine: the **Modal workspace exists** (`tejas-15913`, `main` +
-`dev`, `roomfittr-hf` secret in both), the **Hugging Face token is present and
-its gated approvals verified** by an authenticated download, and **all 13 Tier A
-`.mov` inputs are in place and verified** (§"Tier A capture inputs"). What
-remains is a GPU to run E1–E8 on and an R2 bucket to write artefacts to — R2
-is the only outstanding infrastructure item, Sentry having landed too. See
-§"What only you can do"._
+**Stopped at:** _**The GPU path is proven, 2026-09-23.** VGGT-1B-Commercial
+and SAM 3 have both run on a real Modal GPU against real ARKitScenes frames,
+and the deployed `reconstruct_vggt_l40s` function's output passes
+`backends.validate` and back-projects to 2.3 M points locally. Every CPU stage
+was already built and tested. What remains for the gate is **R2** (the
+pipeline has nowhere to write artefacts), a **full-dataset bake-off**, and
+**Tier B captures**, which no amount of implementation can produce -- E2, E3,
+E5 and E8 are decided on self-captured rooms (3.10)._
 
 ---
 
@@ -117,6 +115,86 @@ acceptance criterion in §8 has been met, because every one of them is a
 measurement on real captures.
 
 ---
+
+---
+
+## The Modal image blocker, and what it actually was
+
+Worker image builds ran past forty minutes and were killed with `Image build
+terminated due to external shut-down`. That message reads like an
+infrastructure fault and is not one.
+
+**Cause: `pip_install` on the CUDA wheels.** torch and its nvidia-* dependencies
+are about 2.5 GB, and pip's resolve-then-download pass over them ran long
+enough for the builder to reclaim the task. The apt output visible when the
+build died was simply the last thing printed, which is what sent the first two
+investigations toward ffmpeg's dependency tree.
+
+**Fix: `uv_pip_install`.** The same layers build in **under 15 seconds**, and
+the whole four-image app now deploys in **83 s** where it previously never
+finished. Isolating it needed one small image at a time rather than repeated
+40-minute deploys; the intermediate scripts are not kept, since the conclusion
+is here and the images carry the fix.
+
+Three smaller things the same investigation turned up:
+
+1. **VGGT pins `numpy<2`; the pipeline package asks for `>=2.0`.** They cannot
+   share an environment, and they do not have to: the GPU container returns
+   plain arrays over the wire and S5-S9 run in `cpu_image` on numpy 2. The
+   constraint is relaxed in `vggt_image` only. Relaxing the *pipeline's* floor
+   to suit a model would let a model's dependencies dictate the whole stack,
+   which R15's monthly model churn makes a bad trade.
+2. **VGGT imports torchvision**, which was not installed. It is now pinned and
+   installed in the same layer as torch, so both resolve against one index in
+   one solver pass.
+3. **Modal's CLI cannot print to a cp1252 console.** `PYTHONIOENCODING=utf-8`
+   is needed on Windows or every invocation dies on a Unicode tick mark.
+
+## What has actually run on a GPU
+
+Measured 2026-09-23, on real `gt-012-a` keyframes produced by S1-S2 on this
+machine. **Not adapter or import tests -- real model inference.**
+
+| | VGGT-1B-Commercial | SAM 3 |
+|---|---|---|
+| GPU | L40S (46 GB, capability 8.9) | L40S |
+| Load | 40.8 s cold | 25.0 s |
+| Inference | 1.8 s / 8 frames; **17.75 s / 16 frames** | 2.3 s for 7 prompts on 1 frame |
+| Peak VRAM | 9.05 GB / **9.38 GB** | **2.12 GB** |
+| Gated download | via `roomfittr-hf` secret | via `roomfittr-hf` secret |
+
+Both are far inside 3.9's budget, and bf16 is native on this card.
+
+**Three adapter assumptions were confirmed against the real output**, which is
+the point of having run it rather than reasoned about it:
+
+- VGGT returns `extrinsic` as `(1, N, 3, 4)` **world-to-camera**, so the
+  inversion in `adapters/vggt.py` is required. The deployed function's poses
+  come back `(16, 4, 4)` and `backends.validate` accepts them.
+- `depth` arrives as `(1, N, H, W, 1)` and `depth_conf` as `(1, N, H, W)` --
+  different ranks, which is why the adapter squeezes conditionally.
+- **`depth_conf` is unbounded, measured 1.09 to 13.48**, not the 0-1 the
+  contract promises. `_normalise_confidence` is not defensive coding; without
+  it every downstream confidence threshold would be meaningless. After the
+  round trip the confidence range is 0.082 to 1.0.
+
+**What SAM 3 found on one frame:** `floor` only, at score 0.84, mask shape
+`[388, 518]` matching the frame exactly. `sofa`, `chair`, `table`, `wall`,
+`door` and `window` all returned nothing at threshold 0.4 on that frame. One
+frame of a kitchen is not evidence about E6 either way, but the `floor` hit
+matters structurally: S5's plane fit needs floor points, and this is where
+they come from.
+
+## What is still not proven
+
+- **No full-dataset run.** One capture, 16 frames, one candidate. E1 compares
+  three models across 13 scenes.
+- **MapAnything has never been loaded.** Its numpy floor is unchecked against
+  the pipeline's; if it also pins `<2`, the VGGT reasoning applies.
+- **No artefact has been written to R2**, because R2 does not exist yet.
+- **S1-S9 has not run end to end on a real capture.** The chain is tested
+  against a synthetic reconstruction and each half is proven on real data, but
+  the two have not been joined in one run.
 
 ## What only you can do
 
