@@ -20,6 +20,13 @@ dependencies = [
     "rtree>=1.4.1",
 ]
 
+[project.optional-dependencies]
+# Only the R2 backend in `storage.py` needs an AWS SDK, and it imports boto3
+# lazily. Keeping it out of the base dependencies means CI and a local Tier A
+# bake-off -- both of which use `LocalObjectStore` -- install neither boto3
+# nor botocore.
+r2 = ["boto3>=1.35"]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

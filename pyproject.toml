@@ -20,6 +20,11 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    # Deploying and invoking the GPU functions is an ops task, not something
+    # the pipeline or the eval harness imports. Kept in `dev` so the Modal SDK
+    # does not become a runtime dependency of a package that 2.4 requires to
+    # be free of it.
+    "roomfittr-modal",
     "datamodel-code-generator>=0.26",
     "pytest>=8.3",
     "ruff>=0.8",
@@ -48,12 +53,14 @@ members = [
     "workers/layout",
     "workers/planner",
     "workers/catalog",
+    "workers/modal_app",
 ]
 
 [tool.uv.sources]
 roomfittr-schemas = { workspace = true }
 roomfittr-pipeline = { workspace = true }
 roomfittr-layout = { workspace = true }
+roomfittr-modal = { workspace = true }
 roomfittr-planner = { workspace = true }
 roomfittr-catalog = { workspace = true }
 
@@ -90,6 +97,23 @@ exclude = '(workers/schemas_py/roomfittr_schemas/|(^|/)conftest\.py$)'
 # in production, so there is nothing here worth checking.
 [[tool.mypy.overrides]]
 module = "imageio_ffmpeg"
+ignore_missing_imports = true
+
+# The model and storage SDKs exist only in the worker images (3.4, 3.9): torch
+# and the three model packages are installed in the GPU images, boto3 only
+# where R2 credentials are. Every one of them is imported inside a function so
+# that this machine, CI and a CPU-only run never touch them; mypy still has to
+# be told they are absent on purpose rather than missing by mistake.
+[[tool.mypy.overrides]]
+module = [
+    "torch",
+    "torch.*",
+    "transformers",
+    "vggt.*",
+    "mapanything.*",
+    "boto3",
+    "botocore.*",
+]
 ignore_missing_imports = true
 
 # trimesh ships no py.typed marker, so mypy reads its source and reports every
