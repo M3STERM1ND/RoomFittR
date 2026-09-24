@@ -50,11 +50,22 @@ def _pipeline_source(image: modal.Image) -> modal.Image:
     return image.add_local_python_source("roomfittr_pipeline", "roomfittr_schemas")
 
 
+# `apt_install("ffmpeg")` pulls Debian's *recommended* set with it, which is
+# mesa, X11 and SDL2 -- a desktop media stack for a headless worker that only
+# ever decodes to disk. It roughly triples the image and was slow enough to be
+# killed mid-build. `--no-install-recommends` keeps the codecs and drops the
+# display stack.
+_APT_FFMPEG = (
+    "apt-get update && "
+    "DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ffmpeg && "
+    "rm -rf /var/lib/apt/lists/*"
+)
+
 cpu_image = _pipeline_source(
     modal.Image.debian_slim(python_version="3.12")
     # 3.4 and 7.5: the pipeline decodes untrusted user video, so FFmpeg comes
     # from the distribution rather than an unpinned download.
-    .apt_install("ffmpeg")
+    .run_commands(_APT_FFMPEG)
     .pip_install(
         "numpy>=2.0",
         "scipy>=1.14",
@@ -74,7 +85,12 @@ cpu_image = _pipeline_source(
 
 _gpu_base = (
     modal.Image.debian_slim(python_version="3.12")
-    .apt_install("ffmpeg", "git")
+    .run_commands(
+        "apt-get update && "
+        "DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "
+        "ffmpeg git ca-certificates && "
+        "rm -rf /var/lib/apt/lists/*"
+    )
     .pip_install(_TORCH, "torchvision", extra_index_url=_TORCH_INDEX)
     .pip_install(
         "numpy>=2.0",
